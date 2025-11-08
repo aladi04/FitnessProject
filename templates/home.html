@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}FitMate - Home{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card dashboard-welcome">
+                <div class="card-body">
+                    <h1 class="display-4 mb-4">Bonjour, {{ user.username }} ! 👋</h1>
+                    <div class="quote-text" id="motivation-quote">
+                        "Le succès n'est pas final, l'échec n'est pas fatal. C'est le courage de continuer qui compte."
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Progress Summary -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-chart-line"></i> Progress Summary</h5>
+                    <div class="dashboard-stats">
+                        <div class="mb-3">
+                            <div class="stat-value">{{ user.profile.weight|default:"--" }} kg</div>
+                            <div class="stat-label">Current Weight</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="stat-value">{{ user.profile.bmi|default:"--" }}</div>
+                            <div class="stat-label">BMI</div>
+                        </div>
+                        <div>
+                            <div class="stat-value">{{ user.profile.fitness_goal|default:"Not Set" }}</div>
+                            <div class="stat-label">Fitness Goal</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-calendar"></i> Upcoming Events</h5>
+                    {% if upcoming_events %}
+                        <ul class="list-unstyled">
+                        {% for event in upcoming_events %}
+                            <li>
+                                <div class="fw-bold">{{ event.title }}</div>
+                                <div class="text-muted">{{ event.date }}</div>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-xmark mb-2"></i>
+                            <p>No upcoming events</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Challenges -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-trophy"></i> Active Challenges</h5>
+                    {% if active_challenges %}
+                        <ul class="list-unstyled">
+                        {% for challenge in active_challenges %}
+                            <li>
+                                <i class="fas fa-star text-warning me-2"></i>
+                                {{ challenge.title }}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-flag mb-2"></i>
+                            <p>No active challenges</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Feed -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-comments"></i> Community Feed</h5>
+                    {% if recent_posts %}
+                        <ul class="list-unstyled">
+                        {% for post in recent_posts %}
+                            <li>
+                                <div class="fw-bold">{{ post.author }}</div>
+                                <div>{{ post.content|truncatechars:50 }}</div>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-users mb-2"></i>
+                            <p>No recent posts</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Array of motivational quotes
+    const quotes = [
+        "Le succès n'est pas final, l'échec n'est pas fatal. C'est le courage de continuer qui compte.",
+        "La seule mauvaise séance est celle qui n'a pas eu lieu.",
+        "Crois en toi et tout devient possible.",
+        "Chaque pas compte sur le chemin du succès.",
+        "Ta seule limite, c'est toi."
+    ];
+
+    // Update quote on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const quoteElement = document.getElementById('motivation-quote');
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        quoteElement.textContent = randomQuote;
+    });
+</script>
+{% endblock %}
