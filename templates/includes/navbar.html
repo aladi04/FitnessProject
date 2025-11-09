@@ -1,0 +1,76 @@
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container position-relative">
+        <!-- Brand on the left -->
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+            <i class="fa fa-heart icon-lg me-2"></i>
+            <span class="fw-bold">FitMate</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+            <!-- Centered navigation links -->
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}"><i class="fa fa-home me-1"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'workout-list' %}"><i class="fa fa-dumbbell me-1"></i> Workouts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'meal-list' %}"><i class="fa fa-utensils me-1"></i> Nutrition</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'challenge-list' %}"><i class="fa fa-trophy me-1"></i> Challenges</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'community' %}"><i class="fa fa-users me-1"></i> Community</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'event-list' %}"><i class="fa fa-calendar-alt me-1"></i> Events</a>
+                </li>
+                
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                <!-- Theme Toggle -->
+                <li class="nav-item me-3">
+                    <button onclick="toggleTheme()" class="btn btn-animated btn-outline-light btn-sm">
+                        <i class="fas fa-moon dark-theme-icon"></i>
+                        <i class="fas fa-sun light-theme-icon"></i>
+                        <span class="ms-1 d-none d-sm-inline">Theme</span>
+                    </button>
+                </li>
+
+                {% if user.is_authenticated %}
+                    <li class="nav-item d-flex align-items-center me-3">
+                        <a class="nav-link d-flex align-items-center" href="{% url 'profile' %}">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span class="text-white">{{ user.username }}</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-animated btn-outline-light btn-sm">
+                                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                            </button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="btn btn-animated btn-outline-light btn-sm me-2" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-animated btn-light btn-sm text-primary" href="{% url 'signup' %}">
+                            <i class="fas fa-user-plus me-1"></i> Sign Up
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

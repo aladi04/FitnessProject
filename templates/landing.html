@@ -1,0 +1,161 @@
+{% extends "base_landing.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section with Animated Background -->
+<section class="hero">
+    <div class="hero-background">
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+    </div>
+    <div class="container hero-inner">
+        <div class="hero-content" data-aos="fade-up">
+            <div class="brand-logo" data-aos="fade-down">
+                <span class="gradient-text">FitMate</span>
+            </div>
+            <h1>Votre Coach Fitness <span class="gradient-text">Intelligent</span></h1>
+            <p class="lead">FitMate vous accompagne dans votre parcours vers une meilleure version de vous-même. Une approche personnalisée pour atteindre vos objectifs de santé et de bien-être.</p>
+            <div class="hero-buttons">
+                <a class="btn primary" href="{% url 'signup' %}">
+                    <i class="fas fa-rocket"></i>
+                    <span>Commencer Gratuitement</span>
+                </a>
+                <a class="btn ghost" href="#features">
+                    <i class="fas fa-info-circle"></i>
+                    <span>En savoir plus</span>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="100">
+                    <span class="stat-number">100+</span>
+                    <span class="stat-label">Exercices</span>
+                </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
+                    <span class="stat-number">1000+</span>
+                    <span class="stat-label">Utilisateurs</span>
+                </div>
+                <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
+                    <span class="stat-number">24/7</span>
+                    <span class="stat-label">Support</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-tag">Fonctionnalités</span>
+            <h2>Une Solution Complète</h2>
+            <p class="section-desc">Découvrez tout ce que FitMate peut faire pour votre santé.</p>
+        </div>
+        <div class="grid">
+            <article class="card" data-aos="fade-up">
+                <div class="card-icon">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <h3>Entraînements Personnalisés</h3>
+                <p>Des programmes adaptés à vos objectifs et votre niveau.</p>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check"></i> Plans sur mesure</li>
+                    <li><i class="fas fa-check"></i> Suivi de progression</li>
+                    <li><i class="fas fa-check"></i> Vidéos explicatives</li>
+                </ul>
+            </article>
+            <article class="card" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-icon">
+                    <i class="fas fa-apple-whole"></i>
+                </div>
+                <h3>Nutrition Intelligente</h3>
+                <p>Des conseils nutritionnels adaptés à vos besoins.</p>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check"></i> Plans alimentaires</li>
+                    <li><i class="fas fa-check"></i> Suivi des calories</li>
+                    <li><i class="fas fa-check"></i> Recettes santé</li>
+                </ul>
+            </article>
+            <article class="card" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Communauté Active</h3>
+                <p>Rejoignez une communauté motivée et motivante.</p>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check"></i> Défis communs</li>
+                    <li><i class="fas fa-check"></i> Entraide</li>
+                    <li><i class="fas fa-check"></i> Événements</li>
+                </ul>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="about">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-content" data-aos="fade-right">
+                <span class="section-tag">À Propos</span>
+                <h2>Votre Coach Personnel</h2>
+                <p class="lead">FitMate combine technologie et expertise pour vous offrir un accompagnement fitness personnalisé.</p>
+                <div class="about-features">
+                    <div class="about-feature">
+                        <i class="fas fa-brain"></i>
+                        <div>
+                            <h4>IA Intelligente</h4>
+                            <p>Adaptation continue à vos progrès.</p>
+                        </div>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-heart"></i>
+                        <div>
+                            <h4>Approche Holistique</h4>
+                            <p>Bien-être physique et mental.</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'signup' %}" class="btn primary">Rejoignez-nous</a>
+            </div>
+            <div class="about-image" data-aos="fade-left">
+                <img src="{% static 'images/fitness-coach.jpg' %}" 
+                     alt="Coach fitness personnel" 
+                     loading="lazy">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content" data-aos="fade-up">
+            <h2>Prêt à Transformer Votre Vie?</h2>
+            <p>Commencez votre voyage vers une meilleure version de vous-même dès aujourd'hui.</p>
+            <div class="cta-buttons">
+                <a href="{% url 'signup' %}" class="btn primary">
+                    <i class="fas fa-user-plus"></i>
+                    <span>S'inscrire Gratuitement</span>
+                </a>
+                <a href="{% url 'login' %}" class="btn ghost">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Se Connecter</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 800,
+        easing: 'ease-out',
+        once: true
+    });
+</script>
+{% endblock %}
