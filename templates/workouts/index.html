@@ -1,0 +1,57 @@
+{% extends 'base.html' %} {% block title %}Workouts - FitMate{% endblock %}
+{%block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0">Workouts</h1>
+      <p class="text-muted">Your personalized workout plans and history.</p>
+    </div>
+    <div>
+      <a class="btn btn-fitmate" href="{% url 'workout_create_view' %}"
+        >New Workout</a
+      >
+    </div>
+  </div>
+
+  <div class="row g-4">
+    {% for workout in Workouts %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fa fa-dumbbell me-2"></i>{{ workout.name }}
+          </h5>
+          <p class="card-text text-muted">
+            {{ workout.description|default:"No description available." }}
+          </p>
+
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <a
+              class="btn btn-outline-fitmate btn-sm"
+              href="{% url 'workout_details_view' workout.pk %}"
+              >Details</a
+            >
+            <a
+              class="btn btn-outline-secondary btn-sm"
+              href="{% url 'workout_update_view' workout.pk %}"
+              >Update</a
+            >
+            <a
+              class="btn btn-outline-danger btn-sm"
+              href="{% url 'workout_delete_view' workout.pk %}"
+              >Delete</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <p class="text-muted text-center">
+        No workouts yet. Create your first one!
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
