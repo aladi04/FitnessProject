@@ -134,10 +134,12 @@
                         {% with total=0 %}
                             {% for booking in upcoming_bookings %}
                                 {% widthratio booking.participants 1 1 as participants %}
-                                {{ total|add:participants }}
+                                {% with total=total|add:participants %}
+                                {% endwith %}
                             {% empty %}
                                 0
                             {% endfor %}
+                            {{ total }}
                         {% endwith %}
                     </h3>
                     <p class="text-muted mb-0">Total Participants</p>
