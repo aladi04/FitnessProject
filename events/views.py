@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
 from .models import Event, Booking
-from .forms import EventSearchForm, BookingForm
+from .forms import EventSearchForm, BookingForm, BookingUpdateForm
 
 def event_list(request):
     events = Event.objects.filter(date__gte=timezone.now())
@@ -39,8 +39,7 @@ def event_detail(request, pk):
     if request.user.is_authenticated:
         user_booking = Booking.objects.filter(
             user=request.user,
-            event=event,
-            is_cancelled=False
+            event=event
         ).first()
     
     if request.method == 'POST':
@@ -48,30 +47,21 @@ def event_detail(request, pk):
             messages.warning(request, 'You have already booked this event.')
             return redirect('event-detail', pk=pk)
         
-        # Check event availability
-        if not event.is_available:
-            messages.error(request, 'This event is fully booked.')
-            return redirect('event-detail', pk=pk)
-        
-        # Check if event is in the future
-        if event.date <= timezone.now():
-            messages.error(request, 'Cannot book past events.')
-            return redirect('event-detail', pk=pk)
-        
-        # Create the booking directly
-        try:
-            booking = Booking.objects.create(
-                user=request.user,
-                event=event
-            )
-            messages.success(request, f'Successfully booked "{event.title}"!')
-            return redirect('booking-history')
-        except Exception as e:
-            messages.error(request, f'Error creating booking: {str(e)}')
-            return redirect('event-detail', pk=pk)
-    
-    # For GET requests, just show the form
-    form = BookingForm()
+        form = BookingForm(request.POST, event=event, user=request.user)
+        if form.is_valid():
+            try:
+                booking = form.save(commit=False)
+                booking.event = event
+                booking.user = request.user
+                booking.save()
+                messages.success(request, f'Successfully booked "{event.title}" for {booking.participants} participant(s)!')
+                return redirect('booking-history')
+            except Exception as e:
+                messages.error(request, f'Error creating booking: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = BookingForm(event=event, user=request.user)
     
     context = {
         'event': event,
@@ -84,28 +74,51 @@ def event_detail(request, pk):
 def booking_history(request):
     bookings = Booking.objects.filter(user=request.user).select_related('event')
     
-    # Separate active and cancelled bookings
-    active_bookings = bookings.filter(is_cancelled=False, event__date__gte=timezone.now())
+    # Separate upcoming and past bookings
+    upcoming_bookings = bookings.filter(event__date__gte=timezone.now())
     past_bookings = bookings.filter(event__date__lt=timezone.now())
-    cancelled_bookings = bookings.filter(is_cancelled=True)
     
     context = {
-        'active_bookings': active_bookings,
+        'upcoming_bookings': upcoming_bookings,
         'past_bookings': past_bookings,
-        'cancelled_bookings': cancelled_bookings,
     }
     return render(request, 'events/booking_history.html', context)
 
 @login_required
-def cancel_booking(request, pk):
+def update_booking(request, pk):
     booking = get_object_or_404(Booking, pk=pk, user=request.user)
     
-    if booking.is_cancelled:
-        messages.warning(request, 'This booking is already cancelled.')
-    elif booking.event.date <= timezone.now():
-        messages.error(request, 'Cannot cancel booking for past events.')
+    if request.method == 'POST':
+        form = BookingUpdateForm(request.POST, instance=booking)
+        if form.is_valid():
+            try:
+                updated_booking = form.save()
+                messages.success(request, f'Booking updated to {updated_booking.participants} participant(s)!')
+                return redirect('booking-history')
+            except Exception as e:
+                messages.error(request, f'Error updating booking: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
-        booking.cancel()
-        messages.success(request, f'Booking for "{booking.event.title}" has been cancelled.')
+        form = BookingUpdateForm(instance=booking)
     
-    return redirect('booking-history')
+    context = {
+        'form': form,
+        'booking': booking,
+    }
+    return render(request, 'events/update_booking.html', context)
+
+@login_required
+def delete_booking(request, pk):
+    booking = get_object_or_404(Booking, pk=pk, user=request.user)
+    
+    if request.method == 'POST':
+        event_title = booking.event.title
+        booking.delete()
+        messages.success(request, f'Booking for "{event_title}" has been deleted.')
+        return redirect('booking-history')
+    
+    context = {
+        'booking': booking,
+    }
+    return render(request, 'events/delete_booking.html', context)

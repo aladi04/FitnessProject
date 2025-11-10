@@ -21,42 +21,77 @@ class EventSearchForm(forms.Form):
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = []  # No fields needed since we're creating from event
+        fields = ['participants']
+        widgets = {
+            'participants': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+                'max': 10,  # Reasonable maximum per booking
+            })
+        }
+        labels = {
+            'participants': 'Number of Participants'
+        }
     
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop('event', None)
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-    
-    def clean(self):
-        cleaned_data = super().clean()
         
-        if self.event and self.user:
-            # Check if user already has an active booking for this event
-            existing_booking = Booking.objects.filter(
-                user=self.user,
-                event=self.event,
-                is_cancelled=False
-            ).exists()
-            
-            if existing_booking:
-                raise forms.ValidationError('You have already booked this event.')
-            
-            # Check event availability
-            if not self.event.is_available:
-                raise forms.ValidationError('This event is fully booked.')
-            
-            # Check if event is in the future
-            from django.utils import timezone
-            if self.event.date <= timezone.now():
-                raise forms.ValidationError('Cannot book past events.')
-        
-        return cleaned_data
+        if self.event:
+            # Set max value based on available seats
+            max_participants = min(10, self.event.available_seats)
+            self.fields['participants'].widget.attrs['max'] = max_participants
     
-    def save(self, commit=True):
-        # Create the booking instance with event and user
-        booking = Booking.objects.create(
-            event=self.event,
-            user=self.user
-        )
-        return booking
+    def clean_participants(self):
+        participants = self.cleaned_data.get('participants')
+        
+        if participants and self.event:
+            if participants < 1:
+                raise forms.ValidationError('Number of participants must be at least 1.')
+            
+            if participants > self.event.available_seats:
+                raise forms.ValidationError(
+                    f'Only {self.event.available_seats} spots available for this event.'
+                )
+        
+        return participants
+
+class BookingUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = ['participants']
+        widgets = {
+            'participants': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1,
+            })
+        }
+        labels = {
+            'participants': 'Number of Participants'
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.event:
+            # For updates, available seats include current booking's participants
+            available_seats = self.instance.event.available_seats + self.instance.participants
+            max_participants = min(10, available_seats)
+            self.fields['participants'].widget.attrs['max'] = max_participants
+    
+    def clean_participants(self):
+        participants = self.cleaned_data.get('participants')
+        
+        if participants and self.instance and self.instance.event:
+            if participants < 1:
+                raise forms.ValidationError('Number of participants must be at least 1.')
+            
+            # Calculate available seats including current booking
+            available_seats = self.instance.event.available_seats + self.instance.participants
+            
+            if participants > available_seats:
+                raise forms.ValidationError(
+                    f'Only {available_seats} spots available for this event.'
+                )
+        
+        return participants

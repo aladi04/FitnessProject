@@ -18,38 +18,56 @@
         </div>
     </div>
 
-    <!-- Active Bookings -->
-    {% if active_bookings %}
+    <!-- Upcoming Bookings -->
+    {% if upcoming_bookings %}
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="fas fa-ticket-alt me-2"></i>Active Bookings
+                <i class="fas fa-ticket-alt me-2"></i>Upcoming Bookings
             </h5>
+            <span class="badge bg-light text-primary">{{ upcoming_bookings|length }} booking(s)</span>
         </div>
         <div class="card-body p-0">
             <div class="list-group list-group-flush">
-                {% for booking in active_bookings %}
+                {% for booking in upcoming_bookings %}
                 <div class="list-group-item">
                     <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h6 class="mb-1">{{ booking.event.title }}</h6>
-                            <div class="text-muted small">
+                        <div class="col-md-7">
+                            <h6 class="mb-2">{{ booking.event.title }}</h6>
+                            <div class="text-muted small mb-2">
                                 <i class="fas fa-calendar me-1"></i>{{ booking.event.date|date:"M d, Y H:i" }}
                                 <i class="fas fa-map-marker-alt ms-3 me-1"></i>{{ booking.event.location }}
                             </div>
-                            <div class="mt-2">
-                                <span class="badge bg-success">Confirmed</span>
-                                <span class="badge bg-info ms-1">Upcoming</span>
+                            <div class="booking-meta">
+                                <span class="badge bg-success me-2">Confirmed</span>
+                                <span class="badge bg-info">
+                                    <i class="fas fa-users me-1"></i>{{ booking.participants }} participant(s)
+                                </span>
+                                <span class="badge bg-warning text-dark ms-2">
+                                    <i class="fas fa-clock me-1"></i>Booked {{ booking.booked_at|date:"M d" }}
+                                </span>
                             </div>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <a href="{% url 'event-detail' booking.event.pk %}" class="btn btn-outline-fitmate btn-sm">
-                                <i class="fas fa-eye me-1"></i>View
-                            </a>
-                            <a href="{% url 'cancel-booking' booking.pk %}" class="btn btn-outline-danger btn-sm" 
-                               onclick="return confirm('Are you sure you want to cancel this booking?')">
-                                <i class="fas fa-times me-1"></i>Cancel
-                            </a>
+                        <div class="col-md-5 text-end">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'event-detail' booking.event.pk %}" class="btn btn-outline-fitmate btn-sm" 
+                                   data-bs-toggle="tooltip" title="View Event Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'update-booking' booking.pk %}" class="btn btn-outline-primary btn-sm"
+                                   data-bs-toggle="tooltip" title="Update Participants">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'delete-booking' booking.pk %}" class="btn btn-outline-danger btn-sm"
+                                   data-bs-toggle="tooltip" title="Delete Booking">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Last updated: {{ booking.updated_at|date:"M d, Y" }}
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -62,10 +80,11 @@
     <!-- Past Bookings -->
     {% if past_bookings %}
     <div class="card mb-4">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="fas fa-history me-2"></i>Past Events
             </h5>
+            <span class="badge bg-secondary">{{ past_bookings|length }} event(s)</span>
         </div>
         <div class="card-body p-0">
             <div class="list-group list-group-flush">
@@ -73,17 +92,16 @@
                 <div class="list-group-item">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h6 class="mb-1">{{ booking.event.title }}</h6>
-                            <div class="text-muted small">
+                            <h6 class="mb-2">{{ booking.event.title }}</h6>
+                            <div class="text-muted small mb-2">
                                 <i class="fas fa-calendar me-1"></i>{{ booking.event.date|date:"M d, Y H:i" }}
                                 <i class="fas fa-map-marker-alt ms-3 me-1"></i>{{ booking.event.location }}
                             </div>
-                            <div class="mt-2">
-                                {% if booking.is_cancelled %}
-                                <span class="badge bg-danger">Cancelled</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Completed</span>
-                                {% endif %}
+                            <div class="booking-meta">
+                                <span class="badge bg-secondary me-2">Completed</span>
+                                <span class="badge bg-info">
+                                    <i class="fas fa-users me-1"></i>{{ booking.participants }} participant(s)
+                                </span>
                             </div>
                         </div>
                         <div class="col-md-4 text-end">
@@ -99,44 +117,45 @@
     </div>
     {% endif %}
 
-    <!-- Cancelled Bookings -->
-    {% if cancelled_bookings %}
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <i class="fas fa-times-circle me-2"></i>Cancelled Bookings
-            </h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="list-group list-group-flush">
-                {% for booking in cancelled_bookings %}
-                <div class="list-group-item">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h6 class="mb-1">{{ booking.event.title }}</h6>
-                            <div class="text-muted small">
-                                <i class="fas fa-calendar me-1"></i>{{ booking.event.date|date:"M d, Y H:i" }}
-                                <i class="fas fa-map-marker-alt ms-3 me-1"></i>{{ booking.event.location }}
-                                {% if booking.cancelled_at %}
-                                <div class="mt-1">
-                                    <i class="fas fa-clock me-1"></i>Cancelled on {{ booking.cancelled_at|date:"M d, Y" }}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <span class="badge bg-danger">Cancelled</span>
-                        </div>
-                    </div>
+    <!-- Statistics Card -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ upcoming_bookings|length }}</h3>
+                    <p class="text-muted mb-0">Upcoming Events</p>
                 </div>
-                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">
+                        {% with total=0 %}
+                            {% for booking in upcoming_bookings %}
+                                {% widthratio booking.participants 1 1 as participants %}
+                                {{ total|add:participants }}
+                            {% empty %}
+                                0
+                            {% endfor %}
+                        {% endwith %}
+                    </h3>
+                    <p class="text-muted mb-0">Total Participants</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-info">{{ past_bookings|length }}</h3>
+                    <p class="text-muted mb-0">Past Events</p>
+                </div>
             </div>
         </div>
     </div>
-    {% endif %}
 
     <!-- Empty State -->
-    {% if not active_bookings and not past_bookings and not cancelled_bookings %}
+    {% if not upcoming_bookings and not past_bookings %}
     <div class="card text-center py-5">
         <div class="card-body">
             <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
@@ -148,5 +167,70 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Help Section -->
+    {% if upcoming_bookings %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h6 class="card-title">
+                <i class="fas fa-question-circle me-2 text-primary"></i>Need Help?
+            </h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start mb-3">
+                        <i class="fas fa-edit text-primary me-3 mt-1"></i>
+                        <div>
+                            <strong>Update Booking</strong>
+                            <p class="text-muted mb-0 small">Change the number of participants for your event.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start mb-3">
+                        <i class="fas fa-trash text-primary me-3 mt-1"></i>
+                        <div>
+                            <strong>Delete Booking</strong>
+                            <p class="text-muted mb-0 small">Cancel your booking and free up spots for others.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Calculate total participants for statistics
+function calculateTotalParticipants() {
+    let total = 0;
+    document.querySelectorAll('.booking-meta .badge.bg-info').forEach(badge => {
+        const text = badge.textContent.trim();
+        const match = text.match(/(\d+)\s+participant/);
+        if (match) {
+            total += parseInt(match[1]);
+        }
+    });
+    return total;
+}
+
+// Update the total participants in the statistics card
+document.addEventListener('DOMContentLoaded', function() {
+    const totalParticipants = calculateTotalParticipants();
+    const totalElement = document.querySelector('.text-success');
+    if (totalElement && totalElement.textContent.trim() === '0') {
+        totalElement.textContent = totalParticipants;
+    }
+});
+</script>
 {% endblock %}

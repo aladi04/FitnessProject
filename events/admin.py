@@ -10,7 +10,7 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ['user', 'event', 'booked_at', 'is_cancelled']
-    list_filter = ['is_cancelled', 'booked_at', 'event']
+    list_display = ['user', 'event', 'participants', 'booked_at', 'updated_at']
+    list_filter = ['booked_at', 'event']
     search_fields = ['user__username', 'event__title']
-    readonly_fields = ['booked_at', 'cancelled_at']
+    readonly_fields = ['booked_at', 'updated_at']
