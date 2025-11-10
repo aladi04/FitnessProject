@@ -18,6 +18,7 @@ class EventSearchForm(forms.Form):
         })
     )
 
+
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
@@ -26,7 +27,7 @@ class BookingForm(forms.ModelForm):
             'participants': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': 1,
-                'max': 10,  # Reasonable maximum per booking
+                'max': 10,
             })
         }
         labels = {
@@ -39,12 +40,12 @@ class BookingForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         if self.event:
-            # Set max value based on available seats
             max_participants = min(10, self.event.available_seats)
             self.fields['participants'].widget.attrs['max'] = max_participants
     
-    def clean_participants(self):
-        participants = self.cleaned_data.get('participants')
+    def clean(self):
+        cleaned_data = super().clean()
+        participants = cleaned_data.get('participants')
         
         if participants and self.event:
             if participants < 1:
@@ -55,7 +56,8 @@ class BookingForm(forms.ModelForm):
                     f'Only {self.event.available_seats} spots available for this event.'
                 )
         
-        return participants
+        return cleaned_data
+
 
 class BookingUpdateForm(forms.ModelForm):
     class Meta:

@@ -53,7 +53,7 @@
                             {% endif %}
                             <div class="form-text">
                                 Maximum {{ form.participants.field.widget.attrs.max }} participants allowed.
-                                {{ booking.event.available_seats + booking.participants }} spots available total.
+                                {{ booking.event.available_seats|add:booking.participants }} spots available total.
                             </div>
                         </div>
                         

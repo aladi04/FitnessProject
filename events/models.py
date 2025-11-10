@@ -53,6 +53,9 @@ class Booking(models.Model):
         # Don't validate during deletion
         if not self.pk and hasattr(self, '_deleting'):
             return
+        
+        if not self.event_id:  # Check if event is set
+            return
             
         if self.event.date <= timezone.now():
             raise ValidationError('Cannot book or modify past events.')
@@ -73,5 +76,7 @@ class Booking(models.Model):
             )
     
     def save(self, *args, **kwargs):
-        self.clean()
+        
+        if self.event_id:
+            self.clean()
         super().save(*args, **kwargs)
