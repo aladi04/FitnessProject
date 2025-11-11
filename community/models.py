@@ -1,91 +1,81 @@
 from django.db import models
-from accounts.models import Member
-from django.core.validators import MinLengthValidator, FileExtensionValidator, ValidationError
-from django.core.validators import RegexValidator
-from django.utils import timezone
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
-
-# Create your models here.
- 
 
 class Post(models.Model):
+
     CATEGORY_CHOICES = [
-        ('workout', 'Workout'),
-        ('nutrition', 'Nutrition'),
-        ('motivation', 'Motivation'),
-        ('progress', 'Progress'),
-        ('other', 'Other'),
+        ("workout", "Workout"),
+        ("nutrition", "Nutrition"),
+        ("motivation", "Motivation"),
+        ("general", "General Discussion"),
     ]
-    title = models.CharField(
-        max_length=200,
-        validators=[MinLengthValidator(5)]
-    )
-    content = models.TextField(
-        validators=[MinLengthValidator(10)]
-    )
-    author = models.ForeignKey(
-        Member,
-        on_delete=models.CASCADE,
-        related_name='posts'
-    )
-    category = models.CharField(
-        max_length=20,
-        choices=CATEGORY_CHOICES,
-        default='other'
-    )
-    likes = models.IntegerField(default=0)
-    image = models.ImageField(
-        upload_to='post_images/',
-        blank=True,
-        null=True,
-        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])]
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True
-    )
-    
+
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+
+    # NEW FIELD → category with restriction
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="general")
+
+    image = models.ImageField(upload_to="posts/", blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)   # ✅ new timestamp field
 
     def __str__(self):
         return self.title
-    
-    def like(self):
-        self.likes += 1
-        self.save()
+
+    @property
+    def like_count(self):
+        return self.likes.count()
+
+    @property
+    def comment_count(self):
+        return self.comments.count()
+
+    def like(self, user):
+        """Like or unlike a post."""
+        like, created = Like.objects.get_or_create(post=self, user=user)
+        if not created:
+            like.delete()
+        return created
+
+    def add_comment(self, user, comment_text):
+        """Add a comment to the post."""
+        return Comment.objects.create(post=self, author=user, content=comment_text)
 
     @classmethod
     def search(cls, query):
-        return cls.objects.filter(
-            Q(title__icontains=query) |
-            Q(content__icontains=query) |
-            Q(category__icontains=query)
-        )
+        """Search posts by title or content."""
+        return cls.objects.filter(models.Q(title__icontains=query) | models.Q(content__icontains=query))
 
     @classmethod
     def sort_by(cls, field):
-        if field in ['title', 'created_at', 'likes', 'category']:
-            return cls.objects.order_by(field)
-        return cls.objects.all()
-    
+        """Sort posts by dynamic field (title, created_at, etc)."""
+        allowed_fields = ["title", "created_at", "-created_at"]
+        if field not in allowed_fields:
+            raise ValidationError("Invalid sorting field")
+        return cls.objects.order_by(field)
+
 
 class Comment(models.Model):
-    post = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        related_name='comments'
-    )
-    author = models.ForeignKey(
-        Member,
-        on_delete=models.CASCADE,
-        related_name='comments'
-    )
-    content = models.TextField(validators=[MinLengthValidator(5)])
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'Comment by {self.author.username} on {self.post.title}'
-    
+        return f"Comment by {self.author.username}"
+
+
+class Like(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
     class Meta:
-        ordering = ['-created_at']
+        unique_together = ("post", "user")  # prevent duplicate likes
+
+    def __str__(self):
+        return f"{self.user.username} likes {self.post.title}"

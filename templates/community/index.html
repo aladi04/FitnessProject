@@ -1,26 +1,30 @@
-{% extends 'base.html' %}
-
-{% block title %}Community - FitMate{% endblock %}
-
+{% extends "base.html" %}
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h1 class="h3 mb-0">Community</h1>
-      <p class="muted">Connect with peers and share progress.</p>
-    </div>
-    <div>
-      <a class="btn btn-fitmate" href="#">New Post</a>
-    </div>
-  </div>
 
-  <div class="row g-4">
-    <div class="col-md-8">
-      <div class="card form-card">
-        <h5>Recent posts</h5>
-        <p class="muted">No posts yet.</p>
-      </div>
-    </div>
-  </div>
+<h2>Community Hub</h2>
+
+<form method="GET" class="search-bar">
+    <input type="text" name="q" placeholder="Search posts...">
+    <select name="sort">
+        <option value="-created_at">Newest</option>
+        <option value="created_at">Oldest</option>
+        <option value="title">Alphabetical</option>
+    </select>
+    <button type="submit">Search</button>
+</form>
+
+<a href="{% url 'create_post' %}">Create new post</a>
+
+{% for post in posts %}
+<div class="post-card">
+    <h3><a href="{% url 'post_details' post.id %}">{{ post.title }}</a></h3>
+    <small>By {{ post.author.username }} — {{ post.created_at|date:"Y-m-d" }}</small><br>
+    <span>Category: {{ post.get_category_display }}</span>
+    <p>{{ post.content|truncatechars:120 }}</p>
+    <p>❤️ {{ post.like_count }} | 💬 {{ post.comment_count }}</p>
 </div>
+{% empty %}
+<p>No posts yet...</p>
+{% endfor %}
+
 {% endblock %}

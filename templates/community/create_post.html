@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Create Post</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>Title</label>
+    <input type="text" name="title" required>
+
+    <label>Content</label>
+    <textarea name="content" required></textarea>
+
+    <label>Category</label>
+    <select name="category">
+        {% for key, label in categories %}
+            <option value="{{ key }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Image (optional)</label>
+    <input type="file" name="image">
+
+    <button type="submit">Post</button>
+</form>
+
+{% endblock %}
