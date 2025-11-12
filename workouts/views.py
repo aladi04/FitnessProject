@@ -19,6 +19,16 @@ class workoutListView(LoginRequiredMixin, ListView):
     template_name = 'workouts/index.html'
     context_object_name = 'Workouts'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(name__icontains=query)
+        sort = self.request.GET.get('sort')
+        if sort:
+            queryset = queryset.order_by(sort)
+        return queryset
+
 
 class exerciseListView(LoginRequiredMixin, ListView):
     model = Exercise
