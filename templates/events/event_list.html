@@ -21,19 +21,39 @@
     <!-- Search and Filter -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-6">
+            <form method="get" class="row g-2">
+                <div class="col-md-3">
                     {{ form.search }}
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     {{ form.location }}
                 </div>
-                <div class="col-md-2">
+
+                <!-- Sort controls -->
+                <div class="col-md-4 col-lg-2">
+                    <select name="sort" class="form-control">
+                        <option value="date" {% if current_sort == 'date' %}selected{% endif %}>Date</option>
+                        <option value="title" {% if current_sort == 'title' %}selected{% endif %}>Title</option>
+                        <option value="location" {% if current_sort == 'location' %}selected{% endif %}>Location</option>
+                        <option value="capacity" {% if current_sort == 'capacity' %}selected{% endif %}>Capacity</option>
+                        <option value="available" {% if current_sort == 'available' %}selected{% endif %}>Available seats</option>
+                        <option value="created" {% if current_sort == 'created' %}selected{% endif %}>Recently added</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-lg-1">
+                    <select name="dir" class="form-control">
+                        <option value="asc" {% if current_dir == 'asc' %}selected{% endif %}>↑ Asc</option>
+                        <option value="desc" {% if current_dir == 'desc' %}selected{% endif %}>↓ Desc</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 col-lg-1">
                     <button type="submit" class="btn btn-fitmate w-100">
                         <i class="fas fa-search me-2"></i>Search
                     </button>
                 </div>
             </form>
+
             
             {% if search_query or location_query %}
             <div class="mt-3">

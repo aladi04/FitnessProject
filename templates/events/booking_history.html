@@ -17,6 +17,8 @@
             </a>
         </div>
     </div>
+    
+
 
     <!-- Upcoming Bookings -->
     {% if upcoming_bookings %}
@@ -25,6 +27,25 @@
             <h5 class="mb-0">
                 <i class="fas fa-ticket-alt me-2"></i>Upcoming Bookings
             </h5>
+            <div class="d-flex align-items-center gap-3">
+                <form method="get" class="d-flex align-items-center">
+                    <label class="me-2 small text-light">Sort by</label>
+                    <select name="sort" class="form-select form-select-sm me-2">
+                        <option value="event_date" {% if current_sort == 'event_date' %}selected{% endif %}>Event date</option>
+                        <option value="event_title" {% if current_sort == 'event_title' %}selected{% endif %}>Event title</option>
+                        <option value="booked_at" {% if current_sort == 'booked_at' %}selected{% endif %}>Booking date</option>
+                        <option value="participants" {% if current_sort == 'participants' %}selected{% endif %}>Participants</option>
+                        <option value="updated_at" {% if current_sort == 'updated_at' %}selected{% endif %}>Last updated</option>
+                    </select>
+
+                    <select name="dir" class="form-select form-select-sm me-2">
+                        <option value="asc" {% if current_dir == 'asc' %}selected{% endif %}>↑ Asc</option>
+                        <option value="desc" {% if current_dir == 'desc' %}selected{% endif %}>↓ Desc</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-outline-fitmate btn-sm">Apply</button>
+                </form>
+            </div>
             <span class="badge bg-light text-primary">{{ upcoming_bookings|length }} booking(s)</span>
         </div>
         <div class="card-body p-0">
@@ -33,7 +54,7 @@
                 <div class="list-group-item">
                     <div class="row align-items-center">
                         <div class="col-md-7">
-                            <h6 class="mb-2">{{ booking.event.title }}</h6>
+                            <h6 class="mb-2" style="color:#36377c;">{{ booking.event.title }}</h6>
                             <div class="text-muted small mb-2">
                                 <i class="fas fa-calendar me-1"></i>{{ booking.event.date|date:"M d, Y H:i" }}
                                 <i class="fas fa-map-marker-alt ms-3 me-1"></i>{{ booking.event.location }}
@@ -50,7 +71,7 @@
                         </div>
                         <div class="col-md-5 text-end">
                             <div class="btn-group" role="group">
-                                <a href="{% url 'event-detail' booking.event.pk %}" class="btn btn-outline-fitmate btn-sm" 
+                                <a href="{% url 'event-detail' booking.event.pk %}" class="btn btn-outline-secondary btn-sm" 
                                    data-bs-toggle="tooltip" title="View Event Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
