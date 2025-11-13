@@ -1,4 +1,5 @@
 from django.db import models
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -251,3 +252,7 @@ def _challenge_get_user_rank(self, user):
 # Attach helper methods to Challenge dynamically to avoid touching class definition above
 Challenge.get_leaderboard = _challenge_get_leaderboard
 Challenge.get_user_rank = _challenge_get_user_rank
+
+
+# Create your models here.
+

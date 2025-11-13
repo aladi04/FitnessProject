@@ -1,20 +1,62 @@
+
 {% extends 'base.html' %}
 
 {% block title %}Workouts - FitMate{% endblock %}
 
 {% block content %}
+
+{% extends 'base.html' %} {% block title %}Workouts - FitMate{% endblock %}
+{%block content %}
+
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h1 class="h3 mb-0">Workouts</h1>
+
       <p class="muted">Your personalized workout plans and history.</p>
     </div>
     <div>
       <a class="btn btn-fitmate" href="#">New Workout</a>
+
+      <p class="text-muted">Your personalized workout plans and history.</p>
+    </div>
+    <div>
+      <a class="btn btn-fitmate" href="{% url 'workout_create_view' %}"
+        >New Workout</a
+      >
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <div class="row g-3">
+      <div class="col-md-8">
+        <form method="get" action="{% url 'workout_list_view' %}">
+          <div class="input-group">
+            <input type="text" class="form-control" name="q" placeholder="Search workouts..." value="{{ request.GET.q }}">
+            <button class="btn btn-outline-secondary" type="submit">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-4">
+        <form method="get" action="{% url 'workout_list_view' %}">
+          <input type="hidden" name="q" value="{{ request.GET.q }}">
+          <select class="form-select" name="sort" onchange="this.form.submit()">
+            <option value="">Sort by...</option>
+            <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name</option>
+            <option value="is_completed" {% if request.GET.sort == 'is_completed' %}selected{% endif %}>Status</option>
+            <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+            <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+          </select>
+        </form>
+      </div>
+
     </div>
   </div>
 
   <div class="row g-4">
+
     <div class="col-md-6 col-lg-4">
       <div class="card h-100">
         <div class="card-body">
@@ -33,6 +75,46 @@
         </div>
       </div>
     </div>
+
+    {% for workout in Workouts %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fa fa-dumbbell me-2"></i>{{ workout.name }}
+          </h5>
+          <p class="card-text text-muted">
+            {{ workout.description|default:"No description available." }}
+          </p>
+
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <a
+              class="btn btn-outline-fitmate btn-sm"
+              href="{% url 'workout_details_view' workout.pk %}"
+              >Details</a
+            >
+            <a
+              class="btn btn-outline-secondary btn-sm"
+              href="{% url 'workout_update_view' workout.pk %}"
+              >Update</a
+            >
+            <a
+              class="btn btn-outline-danger btn-sm"
+              href="{% url 'workout_delete_view' workout.pk %}"
+              >Delete</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <p class="text-muted text-center">
+        No workouts yet. Create your first one!
+      </p>
+    </div>
+    {% endfor %}
+
   </div>
 </div>
 {% endblock %}

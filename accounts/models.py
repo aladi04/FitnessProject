@@ -82,3 +82,7 @@ class Admin(BaseUser):
     
     class Meta:
         swappable = 'AUTH_USER_MODEL'
+
+
+# Create your models here.
+

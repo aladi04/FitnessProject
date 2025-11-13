@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Challenge, Score, Participant
 
 @admin.register(Challenge)
@@ -82,3 +83,7 @@ class ParticipantAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_active and request.user.is_staff
+
+
+# Register your models here.
+

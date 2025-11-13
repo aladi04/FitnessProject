@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
 
-     
+
     'accounts',
     'fitness',
     'nutrition',
@@ -47,8 +47,6 @@ INSTALLED_APPS = [
     'challenges',
     'community',
     'events',
-    
-    
 ]
 
 MIDDLEWARE = [
@@ -145,9 +143,11 @@ LOGIN_URL = 'login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
 # settings.py
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = 'home'  # Redirect to dashboard after login
 LOGOUT_REDIRECT_URL = 'landing'
 
 AUTH_USER_MODEL = 'accounts.Member'
+

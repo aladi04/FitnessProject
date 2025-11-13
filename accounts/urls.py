@@ -1,9 +1,13 @@
 from django.urls import path
+
+from django.contrib.auth import views as auth_views
+
 from . import views
 
 urlpatterns = [
     path('', views.landing_page, name='landing'),
     path('dashboard/', views.dashboard, name='home'),
+
     path('login/', views.user_login, name='login'),  # Use your custom login view
     path('logout/', views.logout_view, name='logout'),
     path('signup/', views.signup, name='signup'),
@@ -20,4 +24,10 @@ urlpatterns = [
     path('profile/change-password/', views.change_password, name='change_password'),
     path('profile/deactivate/', views.deactivate_account, name='deactivate_account'),
     path('profile/delete/', views.delete_account, name='delete_account'),
+
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('signup/', views.signup, name='signup'),
+    path('profile/', views.profile, name='profile'),
+
 ]

@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib import messages
@@ -12,6 +13,16 @@ from .forms import MemberForm, AdminForm
 
 User = get_user_model()
 
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.views.decorators.http import require_POST
+from django.shortcuts import redirect
+
+
+
 def landing_page(request):
     """Render the landing page for non-authenticated users."""
     if request.user.is_authenticated:
@@ -20,6 +31,11 @@ def landing_page(request):
 
 def dashboard(request):
     """Render the dashboard for authenticated users."""
+
+
+    if not request.user.is_authenticated:
+        return redirect('landing')
+
     
     context = {
         'upcoming_events': [],
@@ -27,6 +43,7 @@ def dashboard(request):
         'recent_posts': [],
     }
     return render(request, 'home.html', context)
+
 
 @require_POST
 def logout_view(request):
@@ -312,3 +329,37 @@ def delete_account(request):
         messages.info(request, 'Your account has been permanently deleted.')
         return redirect('landing')
     return redirect('profile')
+
+
+@login_required
+def profile(request):
+	"""Simple profile placeholder view for development."""
+	return render(request, 'accounts/profile.html', {})
+
+
+@require_POST
+def logout_view(request):
+	"""Log the user out and redirect to the homepage.
+
+	This view accepts POST only for safety. The navbar logout button posts to this URL.
+	"""
+	logout(request)
+	return redirect('home')
+
+
+def signup(request):
+	"""Signup view using Django's UserCreationForm.
+
+	On successful POST the user is logged in and redirected to 'home'.
+	This is a simple, low-risk implementation suitable for development.
+	"""
+	if request.method == 'POST':
+		form = UserCreationForm(request.POST)
+		if form.is_valid():
+			user = form.save()
+			login(request, user)
+			return redirect('home')
+	else:
+		form = UserCreationForm()
+	return render(request, 'registration/signup.html', {'form': form})
+

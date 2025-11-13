@@ -214,3 +214,13 @@ def submit_score(request, challenge_id):
 
     # GET -> render a simple form
     return render(request, 'challenges/submit_score.html', {'challenge': ch})
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def index(request):
+	"""Render the challenges index page (login required)."""
+	return render(request, 'challenges/index.html', {})
+

@@ -1,0 +1,74 @@
+{% extends 'base.html' %} 
+{% block title %} {% if object %}EditWorkout-FitMate{%else %}New Workout - FitMate{% endif %} {% endblock %}
+{% block content %}
+
+<div class="container py-5" style="max-width: 700px">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="h4 mb-3">
+        {% if object %}<i class="fa fa-edit me-2"></i> Edit Workout {% else %}<i
+          class="fa fa-plus-circle me-2"
+        ></i>
+        Add a New Workout{% endif %}
+      </h2>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Render form with Bootstrap classes -->
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label">{{ field.label }}</label>
+          {% if field.name == 'is_completed' %}
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="{{ field.id_for_label }}" name="{{ field.html_name }}" {% if field.value %}checked{% endif %}>
+            <label class="form-check-label" for="{{ field.id_for_label }}">
+              {% if field.value %}Completed{% else %}Not Completed{% endif %}
+            </label>
+          </div>
+          {% elif field.name == 'exercises' %}
+          <div class="row g-3">
+            {% for exercise in field.field.queryset %}
+            <div class="col-md-6">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                  <div class="form-check me-3">
+                    <input class="form-check-input" type="checkbox" id="exercise_{{ exercise.id }}" name="{{ field.html_name }}" value="{{ exercise.id }}" {% if exercise in field.value %}checked{% endif %}>
+                    <label class="form-check-label" for="exercise_{{ exercise.id }}"></label>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="card-title mb-1">{{ exercise.name }}</h6>
+                    <span class="badge bg-light text-dark">{{ exercise.category|title }}</span>
+                    <small class="text-muted d-block">{{ exercise.difficulty|title }} • {{ exercise.target_muscle|title }}</small>
+                  </div>
+                  <div class="ms-3">
+                    <i class="fas fa-dumbbell text-primary fa-2x"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          {{ field }}
+          {% endif %}
+          {% if field.errors %}
+          <small class="text-danger">{{ field.errors.0 }}</small>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="d-flex justify-content-between mt-4">
+          <a
+            href="{% url 'workout_list_view' %}"
+            class="btn btn-outline-secondary"
+          >
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-fitmate">Save Workout</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
