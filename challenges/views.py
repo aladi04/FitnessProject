@@ -42,14 +42,16 @@ def index(request):
         # attach top-3 leaderboard entries (list of dicts {'user': User, 'points': float})
         ch.leaderboard = ch.get_leaderboard(top=3)
         ch.user_rank = ch.get_user_rank(request.user) if request.user.is_authenticated else None
-        ch.joined = Participant.objects.filter(challenge=ch, user=request.user).exists() if request.user.is_authenticated else False
+        ch.joined = Participant.objects.filter(
+            challenge=ch, user=request.user).exists() if request.user.is_authenticated else False
 
     # Also provide a short list of upcoming challenges (for a separate UI block)
     upcoming_challenges = Challenge.objects.filter(start_date__gt=now, is_active=True).order_by('start_date')[:5]
     for ch in upcoming_challenges:
         ch.leaderboard = ch.get_leaderboard(top=5)
         ch.user_rank = ch.get_user_rank(request.user) if request.user.is_authenticated else None
-        ch.joined = Participant.objects.filter(challenge=ch, user=request.user).exists() if request.user.is_authenticated else False
+        ch.joined = Participant.objects.filter(
+            challenge=ch, user=request.user).exists() if request.user.is_authenticated else False
 
     context = {
         'challenges': challenges,
@@ -106,13 +108,6 @@ def submit_score(request, challenge_id):
 
     # GET -> render a simple form
     return render(request, 'challenges/submit_score.html', {'challenge': ch})
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Challenge, Participant, Score
-from django.utils import timezone
-from django.views.decorators.http import require_POST
-from django.db.models import Q
 
 
 def index(request):
@@ -150,14 +145,16 @@ def index(request):
         # attach top-3 leaderboard entries (list of dicts {'user': User, 'points': float})
         ch.leaderboard = ch.get_leaderboard(top=3)
         ch.user_rank = ch.get_user_rank(request.user) if request.user.is_authenticated else None
-        ch.joined = Participant.objects.filter(challenge=ch, user=request.user).exists() if request.user.is_authenticated else False
+        ch.joined = Participant.objects.filter(
+            challenge=ch, user=request.user).exists() if request.user.is_authenticated else False
 
     # Also provide a short list of upcoming challenges (for a separate UI block)
     upcoming_challenges = Challenge.objects.filter(start_date__gt=now, is_active=True).order_by('start_date')[:5]
     for ch in upcoming_challenges:
         ch.leaderboard = ch.get_leaderboard(top=5)
         ch.user_rank = ch.get_user_rank(request.user) if request.user.is_authenticated else None
-        ch.joined = Participant.objects.filter(challenge=ch, user=request.user).exists() if request.user.is_authenticated else False
+        ch.joined = Participant.objects.filter(
+            challenge=ch, user=request.user).exists() if request.user.is_authenticated else False
 
     context = {
         'challenges': challenges,
@@ -214,13 +211,3 @@ def submit_score(request, challenge_id):
 
     # GET -> render a simple form
     return render(request, 'challenges/submit_score.html', {'challenge': ch})
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-
-
-@login_required
-def index(request):
-	"""Render the challenges index page (login required)."""
-	return render(request, 'challenges/index.html', {})
-

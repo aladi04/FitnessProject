@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block title %}{{ user.username }} - Profile{% endblock %}
 {% block content %}
 <div class="container py-4">
@@ -334,13 +333,3 @@ document.getElementById('deleteConfirmation').addEventListener('input', function
 
 {% endblock %}
  
-
-{% block title %}Profile - FitMate{% endblock %}
-
-{% block content %}
-<div class="container py-4">
-  <h1>Profile</h1>
-  <p>This is a placeholder profile page for {{ user.username }}.</p>
-</div>
-{% endblock %}
-

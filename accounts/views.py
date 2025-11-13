@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib import messages
@@ -13,15 +12,6 @@ from .forms import MemberForm, AdminForm
 
 User = get_user_model()
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
-from django.views.decorators.http import require_POST
-from django.shortcuts import redirect
-
-
 
 def landing_page(request):
     """Render the landing page for non-authenticated users."""
@@ -29,14 +19,10 @@ def landing_page(request):
         return redirect('home')
     return render(request, 'landing.html')
 
+
 def dashboard(request):
     """Render the dashboard for authenticated users."""
 
-
-    if not request.user.is_authenticated:
-        return redirect('landing')
-
-    
     context = {
         'upcoming_events': [],
         'active_challenges': [],
@@ -52,11 +38,13 @@ def logout_view(request):
     return redirect('landing')
 
 # Custom signup form for Member model
+
+
 class MemberCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     first_name = forms.CharField(max_length=50, required=False)
     last_name = forms.CharField(max_length=50, required=False)
-    
+
     # Add fitness fields
     age = forms.IntegerField(
         required=False,
@@ -86,28 +74,29 @@ class MemberCreationForm(UserCreationForm):
         max_value=500,
         widget=forms.NumberInput(attrs={'placeholder': 'e.g., 70.5'})
     )
-    
+
     class Meta:
         model = Member
-        fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2', 
-                 'age', 'gender', 'height', 'weight')
-    
+        fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2',
+                  'age', 'gender', 'height', 'weight')
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.role = 'member'
-        
+
         # Save fitness fields
         user.age = self.cleaned_data['age']
         user.gender = self.cleaned_data['gender']
         user.height = self.cleaned_data['height']
         user.weight = self.cleaned_data['weight']
-        
+
         if commit:
             user.save()
         return user
+
 
 def signup(request):
     """Signup view using custom MemberCreationForm."""
@@ -122,28 +111,32 @@ def signup(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = MemberCreationForm()
-    
+
     # This should point to your signup template
     return render(request, 'accounts/signup.html', {'form': form})
+
+
 def user_login(request):
     """Custom login view that works with Member model."""
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
-        
+
         # Authenticate using email (since USERNAME_FIELD should be email)
         user = authenticate(request, username=email, password=password)
-        
+
         if user is not None:
             login(request, user)
             messages.success(request, f'Welcome back, {user.first_name or user.username}!')
             return redirect('home')
         else:
             messages.error(request, 'Invalid email or password.')
-    
+
     return render(request, 'accounts/login.html')
 
 # ---- Simple guard for admin pages (temporary) ----
+
+
 def admin_required(view_func):
     """
     Temporary decorator: checks if user is admin.
@@ -156,6 +149,8 @@ def admin_required(view_func):
     return wrapper
 
 # ---- Profile (view-only for a Member) ----
+
+
 @login_required
 def profile(request, user_id=None):
     # If no user_id provided, show current user's profile
@@ -164,13 +159,15 @@ def profile(request, user_id=None):
     else:
         # Get the specific member
         member = get_object_or_404(Member, id=user_id)
-    
+
     context = {
         'user': member,
     }
     return render(request, 'accounts/profile.html', context)
 
 # ---- Admin Dashboard list ----
+
+
 @admin_required
 def admin_dashboard(request):
     admins = Admin.objects.all()
@@ -178,6 +175,8 @@ def admin_dashboard(request):
     return render(request, 'accounts/admin_dashboard.html', {'admins': admins, 'members': members})
 
 # ---- Add Member ----
+
+
 @admin_required
 def add_member(request):
     if request.method == 'POST':
@@ -198,6 +197,8 @@ def add_member(request):
     return render(request, 'accounts/admin_user_form.html', {'form': form, 'title': 'Add Member'})
 
 # ---- Edit Member ----
+
+
 @admin_required
 def edit_member(request, pk):
     member = get_object_or_404(Member, pk=pk)
@@ -217,6 +218,8 @@ def edit_member(request, pk):
     return render(request, 'accounts/admin_user_form.html', {'form': form, 'title': 'Edit Member'})
 
 # ---- Delete Member ----
+
+
 @admin_required
 @require_POST
 def delete_member(request, pk):
@@ -226,6 +229,8 @@ def delete_member(request, pk):
     return redirect('admin_dashboard')
 
 # ---- Add/Edit/Delete Admin ----
+
+
 @admin_required
 def add_admin(request):
     if request.method == 'POST':
@@ -243,6 +248,7 @@ def add_admin(request):
     else:
         form = AdminForm()
     return render(request, 'accounts/admin_user_form.html', {'form': form, 'title': 'Add Admin'})
+
 
 @admin_required
 def edit_admin(request, pk):
@@ -262,6 +268,7 @@ def edit_admin(request, pk):
         form = AdminForm(instance=admin)
     return render(request, 'accounts/admin_user_form.html', {'form': form, 'title': 'Edit Admin'})
 
+
 @admin_required
 @require_POST
 def delete_admin(request, pk):
@@ -270,34 +277,36 @@ def delete_admin(request, pk):
     messages.success(request, "Admin deleted.")
     return redirect('admin_dashboard')
 
+
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
         member = request.user  # This should be your Member instance
-        
+
         # Update basic fields
         member.first_name = request.POST.get('first_name', '')
         member.last_name = request.POST.get('last_name', '')
         member.email = request.POST.get('email', '')
-        
+
         # Update fitness fields with validation
         age = request.POST.get('age', '')
         member.age = int(age) if age and age.isdigit() else None
-        
+
         member.gender = request.POST.get('gender', '')
-        
+
         height = request.POST.get('height', '')
         member.height = float(height) if height else None
-        
+
         weight = request.POST.get('weight', '')
         member.weight = float(weight) if weight else None
-        
+
         member.save()
-        
+
         messages.success(request, 'Profile updated successfully!')
         return redirect('profile')
-    
+
     return redirect('profile')
+
 
 @login_required
 def change_password(request):
@@ -313,6 +322,7 @@ def change_password(request):
                 messages.error(request, error)
     return redirect('profile')
 
+
 @login_required
 def deactivate_account(request):
     if request.method == 'POST':
@@ -322,6 +332,7 @@ def deactivate_account(request):
         return redirect('logout')
     return redirect('profile')
 
+
 @login_required
 def delete_account(request):
     if request.method == 'POST':
@@ -329,37 +340,3 @@ def delete_account(request):
         messages.info(request, 'Your account has been permanently deleted.')
         return redirect('landing')
     return redirect('profile')
-
-
-@login_required
-def profile(request):
-	"""Simple profile placeholder view for development."""
-	return render(request, 'accounts/profile.html', {})
-
-
-@require_POST
-def logout_view(request):
-	"""Log the user out and redirect to the homepage.
-
-	This view accepts POST only for safety. The navbar logout button posts to this URL.
-	"""
-	logout(request)
-	return redirect('home')
-
-
-def signup(request):
-	"""Signup view using Django's UserCreationForm.
-
-	On successful POST the user is logged in and redirected to 'home'.
-	This is a simple, low-risk implementation suitable for development.
-	"""
-	if request.method == 'POST':
-		form = UserCreationForm(request.POST)
-		if form.is_valid():
-			user = form.save()
-			login(request, user)
-			return redirect('home')
-	else:
-		form = UserCreationForm()
-	return render(request, 'registration/signup.html', {'form': form})
-

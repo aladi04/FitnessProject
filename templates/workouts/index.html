@@ -1,23 +1,9 @@
-
-{% extends 'base.html' %}
-
-{% block title %}Workouts - FitMate{% endblock %}
-
-{% block content %}
-
 {% extends 'base.html' %} {% block title %}Workouts - FitMate{% endblock %}
 {%block content %}
-
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h1 class="h3 mb-0">Workouts</h1>
-
-      <p class="muted">Your personalized workout plans and history.</p>
-    </div>
-    <div>
-      <a class="btn btn-fitmate" href="#">New Workout</a>
-
       <p class="text-muted">Your personalized workout plans and history.</p>
     </div>
     <div>
@@ -51,31 +37,10 @@
           </select>
         </form>
       </div>
-
     </div>
   </div>
 
   <div class="row g-4">
-
-    <div class="col-md-6 col-lg-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fa fa-running me-2"></i>Quick Cardio</h5>
-          <p class="card-text muted">20 minutes HIIT to get your heart pumping.</p>
-          <a class="btn btn-outline-fitmate btn-sm mt-3" href="#">Start</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6 col-lg-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title"><i class="fa fa-dumbbell me-2"></i>Strength Circuit</h5>
-          <p class="card-text muted">Full-body circuit focused on compound lifts.</p>
-          <a class="btn btn-outline-fitmate btn-sm mt-3" href="#">Start</a>
-        </div>
-      </div>
-    </div>
-
     {% for workout in Workouts %}
     <div class="col-md-6 col-lg-4">
       <div class="card h-100 shadow-sm">
@@ -114,7 +79,6 @@
       </p>
     </div>
     {% endfor %}
-
   </div>
 </div>
 {% endblock %}
