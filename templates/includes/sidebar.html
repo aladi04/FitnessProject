@@ -1,0 +1,60 @@
+<div class="modern-sidebar animate__animated animate__fadeIn">
+    <div class="glassmorphic-container motivation-section">
+        <div class="glow-header">
+            <i class="fas fa-dumbbell icon-3d"></i>
+            <h5 class="section-title">Daily Motivation</h5>
+        </div>
+        <div class="quote-container">
+            <p id="daily-quote" class="quote-text">
+                "The only bad workout is the one that didn't happen."
+                <i class="fas fa-quote-right quote-icon"></i>
+            </p>
+            <div class="quote-decoration"></div>
+        </div>
+    </div>
+    
+    <div class="glassmorphic-container stats-section">
+        <div class="glow-header">
+            <i class="fas fa-chart-line icon-3d"></i>
+            <h5 class="section-title">Quick Stats</h5>
+        </div>
+        <div class="stats-container">
+            {% if user.is_authenticated %}
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-weight-hanging"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Current BMI</span>
+                        <span class="stat-value">{{ user.profile.bmi|default:"Not set" }}</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Goal Weight</span>
+                        <span class="stat-value">{{ user.profile.goal_weight|default:"Not set" }} kg</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Active Challenges</span>
+                        <span class="stat-value">{{ user.active_challenges.count }}</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="login-prompt">
+                    <i class="fas fa-lock login-icon"></i>
+                    <p>Please login to see your stats</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
