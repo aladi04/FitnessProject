@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+<link href="{% static 'css/community.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container text-center" style="max-width: 600px;">
+    <h3 class="fw-bold mt-4">Delete Post</h3>
+    <p>Are you sure you want to delete <strong>{{ post.title }}</strong>?</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger me-2">Yes, delete</button>
+        <a href="{% url 'post_details' post.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

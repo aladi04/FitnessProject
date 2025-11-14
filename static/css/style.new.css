@@ -399,6 +399,35 @@ h1, h2, h3, h4, h5, h6 {
     overflow: hidden;
 }
 
+/* Community post card tweaks */
+.post-card {
+    background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.06), rgba(var(--secondary-rgb), 0.04));
+    border-radius: 20px;
+    padding: 1.5rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.post-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+}
+.post-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto 1rem;
+}
+.post-card .fa-heart {
+    color: var(--accent);
+}
+
+/* Ensure badges and buttons contrast on themed backgrounds */
+.post-card .badge {
+    background: rgba(255,255,255,0.85);
+    color: var(--text-primary);
+}
+
+
 .quote-text {
     font-size: 1.1rem;
     color: var(--text-primary);
