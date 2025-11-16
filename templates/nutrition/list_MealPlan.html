@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Meal Plans - FitMate{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Hero Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card dashboard-welcome text-center">
+                <div class="card-body">
+                    <h1 class="display-4 mb-3">Your Meal Plans</h1>
+                    <p class="text-fitmate fw-bold">“Plan smart. Eat better. Live healthier.”</p>
+                    <a href="{% url 'add_mealplan' %}" class="btn btn-fitmate mt-3">
+                        <i class="fas fa-plus me-2"></i> Add Meal Plan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="row">
+        {% for mealplan in mealplans %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm rounded-4 p-3 hover-shadow">
+                <h4 class="text-fitmate">{{ mealplan.day }}</h4>
+                <hr>
+
+                <p><strong>Breakfast:</strong>
+                    {% if mealplan.breakfast.all %}
+                        {% for ingredient in mealplan.breakfast.all %}
+                            {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        None
+                    {% endif %}
+                </p>
+
+                <p><strong>Lunch:</strong>
+                    {% if mealplan.lunch.all %}
+                        {% for ingredient in mealplan.lunch.all %}
+                            {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        None
+                    {% endif %}
+                </p>
+
+                <p><strong>Dinner:</strong>
+                    {% if mealplan.dinner.all %}
+                        {% for ingredient in mealplan.dinner.all %}
+                            {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        None
+                    {% endif %}
+                </p>
+
+                <p><strong>Snacks:</strong>
+                    {% if mealplan.snacks.all %}
+                        {% for snack in mealplan.snacks.all %}
+                            {{ snack.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        None
+                    {% endif %}
+                </p>
+
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{% url 'detail_mealplan' mealplan.pk %}" class="btn btn-fitmate btn-sm">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <a href="{% url 'update_mealplan' mealplan.pk %}" class="btn btn-fitmate btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'delete_mealplan' mealplan.pk %}" class="btn ghost btn-sm">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center">No meal plans available yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Back Button to Main Nutrition Page -->
+    <div class="row mt-5">
+        <div class="col text-center">
+            <a class="btn btn-outline-secondary btn-lg" href="/nutrition/">
+                <i class="fas fa-arrow-left me-2"></i> Back to Nutrition
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

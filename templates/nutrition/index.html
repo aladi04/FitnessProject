@@ -1,26 +1,99 @@
 {% extends 'base.html' %}
-
-{% block title %}Nutrition - FitMate{% endblock %}
+{% block title %}Meal Plans - FitMate{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h1 class="h3 mb-0">Nutrition</h1>
-      <p class="muted">Meal plans and calorie tracking.</p>
-    </div>
-    <div>
-      <a class="btn btn-fitmate" href="#">Create Plan</a>
-    </div>
-  </div>
 
-  <div class="row g-4">
-    <div class="col-md-6">
-      <div class="card form-card">
-        <h5 class="mb-2">Today's Meals</h5>
-        <p class="muted">Breakfast, Lunch, Dinner.</p>
-      </div>
+    <!-- Welcome & Slogan -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <div class="card dashboard-welcome">
+                <div class="card-body">
+                    <h1 class="display-4 mb-3">Hello, {{ user.username }}! 👋</h1>
+                    <div class="quote-text" id="meal-quote">
+                        "Eat well, live well, achieve your goals!"
+                    </div>
+
+                    <!-- Buttons: Add & View Meal Plans -->
+                    <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                        <a class="btn btn-fitmate btn-lg" href="{% url 'add_mealplan' %}">
+                            <i class="fas fa-plus me-2"></i> Add Meal Plan
+                        </a>
+                        <a class="btn btn-outline-fitmate btn-lg" href="{% url 'list_mealplans' %}">
+                            <i class="fas fa-list me-2"></i> View Meal Plans
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+
+    <!-- Button to view Ingredients -->
+    <div class="row mt-5">
+        <div class="col text-center">
+            <a class="btn btn-outline-primary btn-lg" href="{% url 'list_ingredients' %}">
+                <i class="fas fa-carrot me-2"></i> View Ingredients
+            </a>
+        </div>
+    </div>
+
 </div>
+
+<!-- Optional Floating Add Meal Plan Button -->
+<a href="{% url 'add_mealplan' %}" 
+   class="btn btn-fitmate btn-lg rounded-circle shadow-lg position-fixed"
+   style="bottom: 30px; right: 30px; width: 60px; height: 60px; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
+   <i class="fas fa-plus"></i>
+</a>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const quotes = [
+        "Eat well, live well, achieve your goals!",
+        "A healthy outside starts from the inside.",
+        "Small steps every day lead to big results.",
+        "Your nutrition is your superpower.",
+        "Fuel your body, fuel your life."
+    ];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const quoteElement = document.getElementById('meal-quote');
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        quoteElement.textContent = randomQuote;
+    });
+</script>
+
+<style>
+.btn-fitmate {
+    background-color: #6C63FF;
+    color: white;
+    border: none;
+}
+.btn-fitmate:hover {
+    background-color: #5848c2;
+    color: white;
+}
+.btn-outline-fitmate {
+    border: 2px solid #6C63FF;
+    color: #6C63FF;
+}
+.btn-outline-fitmate:hover {
+    background-color: #6C63FF;
+    color: white;
+}
+.btn-outline-primary {
+    border: 2px solid #0d6efd;
+    color: #0d6efd;
+}
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+.dashboard-welcome {
+    background: #f8f9fa;
+    border-radius: 1rem;
+}
+</style>
 {% endblock %}

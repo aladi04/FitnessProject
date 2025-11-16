@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Ingredients - FitMate{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Hero Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card dashboard-welcome text-center">
+                <div class="card-body">
+                    <h1 class="display-4 mb-3">Ingredients</h1>
+                    <p class="text-fitmate fw-bold">“Know what you eat. Plan better meals.”</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <div class="col-md-6 offset-md-3">
+            <form method="GET" class="d-flex">
+                <input type="text" name="q" value="{{ query|default:'' }}" class="form-control me-2" placeholder="Search ingredient...">
+                <button type="submit" class="btn btn-fitmate">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ingredients Table -->
+    <div class="row">
+        <div class="col">
+            {% if ingredients %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-fitmate text-white" style="background-color:#6c757d;">
+                        <tr>
+                            <th>Name</th>
+                            <th>Calories</th>
+                            <th>Proteins (g)</th>
+                            <th>Carbs (g)</th>
+                            <th>Fats (g)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ingredient in ingredients %}
+                        <tr>
+                            <td>{{ ingredient.name }}</td>
+                            <td>{{ ingredient.calories }}</td>
+                            <td>{{ ingredient.proteins }}</td>
+                            <td>{{ ingredient.carbs }}</td>
+                            <td>{{ ingredient.fats }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center">No ingredients found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="row mt-5">
+        <div class="col text-center">
+            <a class="btn btn-outline-secondary btn-lg" href="/nutrition/">
+                <i class="fas fa-arrow-left me-2"></i> Back to Nutrition
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

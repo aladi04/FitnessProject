@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Add Meal Plan - FitMate{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Hero / Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card dashboard-welcome text-center">
+                <div class="card-body">
+                    <h1 class="display-4 mb-3">Create New Meal Plan</h1>
+                    <p class="text-fitmate fw-bold">“Eat well, plan smart, reach your goals!”</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card dashboard-card shadow-sm rounded-4 p-4 hover-shadow">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-fitmate">
+                            <i class="fas fa-plus me-2"></i> Save
+                        </button>
+                        <a href="{% url 'list_mealplans' %}" class="btn ghost">
+
+                            <i class="fas fa-arrow-left me-2"></i> Back to List
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional floating save button -->
+<a href="#" class="btn btn-fitmate floating-btn" onclick="document.querySelector('form').submit();">
+    <i class="fas fa-plus"></i>
+</a>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 800,
+        easing: 'ease-out',
+        once: true
+    });
+</script>
+<style>
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    transition: 0.3s;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.btn-fitmate {
+    background-color: #6C63FF;
+    color: white;
+    border: none;
+}
+.btn-fitmate:hover {
+    background-color: #5848c2;
+    color: white;
+}
+.text-fitmate {
+    color: #6C63FF;
+}
+.dashboard-card {
+    border: none;
+}
+.dashboard-welcome {
+    background: #f8f9fa;
+    border-radius: 1rem;
+}
+.floating-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+</style>
+{% endblock %}

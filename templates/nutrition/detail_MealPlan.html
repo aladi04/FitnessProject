@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Meal Plan Details - FitMate{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="card dashboard-card shadow-sm rounded-4 p-4 hover-shadow">
+        <h2 class="text-fitmate">{{ mealplan.day }} — Meal Plan</h2>
+        <hr>
+
+        <p><strong>Breakfast:</strong>
+            {% if mealplan.breakfast.all %}
+                {% for ingredient in mealplan.breakfast.all %}
+                    {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                None
+            {% endif %}
+        </p>
+
+        <p><strong>Lunch:</strong>
+            {% if mealplan.lunch.all %}
+                {% for ingredient in mealplan.lunch.all %}
+                    {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                None
+            {% endif %}
+        </p>
+
+        <p><strong>Dinner:</strong>
+            {% if mealplan.dinner.all %}
+                {% for ingredient in mealplan.dinner.all %}
+                    {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                None
+            {% endif %}
+        </p>
+
+        <p><strong>Snacks:</strong>
+            {% if mealplan.snacks.all %}
+                {% for snack in mealplan.snacks.all %}
+                    {{ snack.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                None
+            {% endif %}
+        </p>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'list_mealplans' %}" class="btn ghost">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+
+            <div>
+                <a href="{% url 'update_mealplan' mealplan.pk %}" class="btn btn-fitmate me-2">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+
+                <a href="{% url 'delete_mealplan' mealplan.pk %}" class="btn ghost">
+                    <i class="fas fa-trash-alt"></i> Delete
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
