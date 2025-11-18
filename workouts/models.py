@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
 
 CATEGORY_CHOICES = [
@@ -57,6 +58,8 @@ class Workout(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     is_completed = models.BooleanField(default=False)
+
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="workouts")
 
     exercises = models.ManyToManyField(Exercise, related_name="workouts")
 

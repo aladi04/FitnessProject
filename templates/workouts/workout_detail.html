@@ -38,6 +38,13 @@
               <div class="flex-grow-1">
                 <h6 class="card-title mb-1">{{ exercise.name }}</h6>
                 <span class="badge bg-light text-dark">{{ exercise.category|title }}</span>
+                {% if exercise.video_url %}
+                <div class="mt-2">
+                  <a href="{{ exercise.video_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-play-circle me-1"></i>Watch Video
+                  </a>
+                </div>
+                {% endif %}
               </div>
             </div>
           </div>
