@@ -80,6 +80,7 @@ class workoutDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         workout = self.get_object()
         return self.request.user.is_superuser or workout.created_by == self.request.user
 
+
 @login_required
 def workout_export_pdf(request, pk):
     workout = get_object_or_404(Workout, pk=pk)
@@ -88,125 +89,94 @@ def workout_export_pdf(request, pk):
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Title - Centered and larger font
-    pdf.set_font("Arial", "B", 20)
-    pdf.cell(0, 15, f"Workout: {workout.name}", ln=True, align='C')
+    # -------------------------
+    # HEADER
+    # -------------------------
+    pdf.set_font("Arial", "B", 22)
+    pdf.set_text_color(40, 40, 40)
+    pdf.cell(0, 15, f"{workout.name.upper()}", ln=True, align='C')
 
-    # Separator line
     pdf.set_draw_color(0, 0, 0)
-    pdf.set_line_width(0.5)
+    pdf.set_line_width(0.6)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(5)
+    pdf.ln(8)
 
-    # Description section
+    # -------------------------
+    # DESCRIPTION
+    # -------------------------
     pdf.set_font("Arial", "B", 14)
-    pdf.cell(0, 10, "Description:", ln=True)
+    pdf.set_text_color(50, 50, 50)
+    pdf.cell(0, 10, "Description", ln=True)
+
     pdf.set_font("Arial", "", 12)
-    description = workout.description if workout.description else "No description provided."
+    description = workout.description or "No description provided."
     pdf.multi_cell(0, 8, description)
-    pdf.ln(3)
+    pdf.ln(4)
 
-    # Status section
+    # -------------------------
+    # STATUS
+    # -------------------------
     pdf.set_font("Arial", "B", 14)
-    pdf.cell(0, 10, "Status:", ln=True)
+    pdf.cell(0, 10, "Status", ln=True)
+
     pdf.set_font("Arial", "", 12)
     status = "Completed" if workout.is_completed else "Not Completed"
+    pdf.set_text_color(0, 102, 51) if workout.is_completed else pdf.set_text_color(153, 102, 0)
     pdf.cell(0, 8, status, ln=True)
-    pdf.ln(5)
+    pdf.set_text_color(0, 0, 0)
+    pdf.ln(6)
 
-    # Exercises list header
+    # -------------------------
+    # EXERCISES HEADER
+    # -------------------------
     pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 12, "Exercises Included:", ln=True)
+    pdf.set_text_color(40, 40, 40)
+    pdf.cell(0, 12, "Exercises Included", ln=True)
     pdf.ln(3)
 
-    '''
-    # Exercises details with border box and better spacing
+    # -------------------------
+    # EXERCISES LIST
+    # -------------------------
+    exercise_count = 0
+
     for exercise in workout.exercises.all():
-        y_before = pdf.get_y()
-        pdf.set_line_width(0.1)
-        pdf.set_draw_color(0, 0, 0)
-
-        # Draw a rectangle as border for each exercise block
-        x_start = 10
-        width = 190
-        height_start = pdf.get_y()
-
-        # Exercise Title
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(0, 10, exercise.name, ln=True)
-
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(30, 8, "Category:", border=0)
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 8, exercise.category.title(), ln=True)
-
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(30, 8, "Difficulty:", border=0)
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 8, exercise.difficulty.title(), ln=True)
-
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(30, 8, "Target Muscle:", border=0)
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 8, exercise.target_muscle.title(), ln=True)
-
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(30, 8, "Description:", border=0)
-        pdf.set_font("Arial", "", 12)
-        description = exercise.description if exercise.description else "No description."
-        pdf.multi_cell(0, 8, description)
-
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(30, 8, "Sets:", border=0)
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 8, str(exercise.sets), ln=True)
-
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(30, 8, "Reps:", border=0)
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 8, str(exercise.reps), ln=True)
-
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(30, 8, "Weight:", border=0)
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 8, str(exercise.weight), ln=True)
-
-        if exercise.duration:
-            pdf.set_font("Arial", "B", 12)
-            pdf.cell(30, 8, "Duration:", border=0)
-            pdf.set_font("Arial", "", 12)
-            pdf.cell(0, 8, f"{exercise.duration} seconds", ln=True)
-
-        if exercise.video_url:
-            pdf.set_font("Arial", "B", 12)
-            pdf.cell(30, 8, "Video URL:", border=0)
-            pdf.set_font("Arial", "", 12)
-            pdf.multi_cell(0, 8, exercise.video_url)
-
-        # Calculate height for the border rectangle after the block content
-        height_end = pdf.get_y()
-        height = height_end - height_start + 3
-        pdf.rect(x_start, height_start - 2, width, height)
-
-        pdf.ln(5)'''
-    for exercise in workout.exercises.all():
+        exercise_count += 1
         x_start = 10
         box_width = 190
+        page_start = pdf.page_no()
         y_start = pdf.get_y()
 
-        # Start drawing content
+        # Exercise Name
         pdf.set_font("Arial", "B", 14)
+        pdf.set_text_color(0, 0, 0)
         pdf.cell(0, 10, exercise.name, ln=True)
 
+        # Helper for label/value inside box
         def label_value(label, value, multiline=False):
-            pdf.set_font("Arial", "B", 12)
-            pdf.cell(30, 8, f"{label}:", border=0)
-            pdf.set_font("Arial", "", 12)
-            if multiline:
-                pdf.multi_cell(0, 8, value)
-            else:
-                pdf.cell(0, 8, value, ln=True)
+            label_width = 40
+            value_width = box_width - label_width - 2
 
+            pdf.set_font("Arial", "B", 12)
+            pdf.set_text_color(50, 50, 50)
+            x_label = pdf.get_x()
+            y_label = pdf.get_y()
+            pdf.cell(label_width, 8, f"{label}:", border=0)
+
+            pdf.set_font("Arial", "", 12)
+            pdf.set_text_color(0, 0, 0)
+
+            if multiline:
+                x_value = pdf.get_x()
+                y_value = pdf.get_y()
+                pdf.set_xy(x_value, y_value)
+                pdf.multi_cell(value_width, 8, value)
+                pdf.set_xy(x_start, pdf.get_y())  # reset to left margin
+            else:
+                pdf.cell(value_width, 8, value, ln=True)
+
+            pdf.ln(1)  # spacing between fields
+
+        # Exercise Details
         label_value("Category", exercise.category.title())
         label_value("Difficulty", exercise.difficulty.title())
         label_value("Target Muscle", exercise.target_muscle.title())
@@ -219,15 +189,30 @@ def workout_export_pdf(request, pk):
         if exercise.video_url:
             label_value("Video URL", exercise.video_url, multiline=True)
 
-        # Draw rectangle after content
+        page_end = pdf.page_no()
         y_end = pdf.get_y()
-        box_height = y_end - y_start + 2
-        pdf.rect(x_start, y_start - 1, box_width, box_height)
+
+        # Draw box
+        pdf.set_draw_color(180, 180, 180)
+        pdf.set_line_width(0.3)
+        if page_start == page_end:
+            box_height = y_end - y_start + 2
+            pdf.rect(x_start, y_start - 1, box_width, box_height)
+        else:
+            # Split box across pages
+            pdf.rect(x_start, y_start - 1, box_width, pdf.h - y_start - 15)
+            pdf.rect(x_start, 10, box_width, y_end - 10 + 2)
 
         pdf.ln(5)
 
-    # Output PDF response
-    response = HttpResponse(content_type="application/pdf")
+        # Force page break after every 2 exercises
+        if exercise_count % 2 == 0:
+            pdf.add_page()
+
+    # -------------------------
+    # OUTPUT PDF
+    # -------------------------
+    pdf_bytes = bytes(pdf.output(dest="S"))
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{workout.name}.pdf"'
-    response.write(bytes(pdf.output(dest="S")))
     return response
