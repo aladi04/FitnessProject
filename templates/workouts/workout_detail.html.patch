@@ -1,0 +1,22 @@
+<<<<<<<
+{% extends 'base.html' %} {% block title %}Workout Details - FitMate{%endblock%}
+=======
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Workout Details - FitMate{%endblock%}
+>>>>>>> 
+<<<<<<<
+                  <div class="ratio ratio-16x9">
+                    <video controls class="w-100 h-100" preload="metadata">
+                      <source src="{{ exercise.video_url }}" type="video/mp4">
+                      <p class="p-3">Your browser doesn't support video. <a href="{{ exercise.video_url }}">Download</a> it.</p>
+                    </video>
+                  </div>
+>>>>>>> 
+                  <div class="ratio ratio-16x9">
+                    <video controls class="w-100 h-100" preload="metadata">
+                      <source src="{% static exercise.video_url %}" type="video/mp4">
+                      <p class="p-3">Your browser doesn't support video. <a href="{% static exercise.video_url %}">Download</a> it.</p>
+                    </video>
+                  </div>
+>>>>>>>

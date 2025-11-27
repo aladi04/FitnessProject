@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load workout_extras %}
+{% block title %}Workout Details - FitMate{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 700px">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="h4 mb-3">
+        <i class="fa fa-dumbbell me-2"></i>{{ workout.name }}
+      </h2>
+
+      <p class="text-muted mb-4">
+        {{ workout.description|default:"No description provided." }}
+      </p>
+
+      <div class="mb-4">
+        <strong>Status:</strong>
+        {% if workout.is_completed %}
+          <span class="badge bg-success rounded-pill px-3 py-2">
+            <i class="fas fa-check-circle me-1"></i>Completed
+          </span>
+        {% else %}
+          <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+            <i class="fas fa-clock me-1"></i>Not Completed
+          </span>
+        {% endif %}
+      </div>
+
+      <h5 class="mb-2">Exercises Included:</h5>
+
+      {% if workout.exercises.all %}
+      <div class="row g-3 mb-4">
+        {% for exercise in workout.exercises.all %}
+        <div class="col-md-6">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="me-3">
+                  <i class="fas fa-dumbbell text-primary fa-2x"></i>
+                </div>
+                <div>
+                  <h6 class="card-title mb-1 d-inline">{{ exercise.name }}</h6>
+                  {% if exercise.video_url %}
+                  <button type="button" class="btn btn-sm btn-outline-primary ms-2"
+                          data-bs-toggle="modal"
+                          data-bs-target="#videoModal{{ exercise.id }}">
+                    <i class="fas fa-play-circle me-1"></i>Demo
+                  </button>
+                  {% endif %}
+                  <div>
+                    <span class="badge bg-light text-dark">{{ exercise.category|title }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% if exercise.video_url %}
+          <!-- Exercise Video Modal -->
+          {% with embed_url=exercise.video_url|youtube_embed %}
+          <div class="modal fade" id="videoModal{{ exercise.id }}" tabindex="-1"
+               aria-labelledby="videoModalLabel{{ exercise.id }}" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-xl">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="videoModalLabel{{ exercise.id }}">
+                    Demo: {{ exercise.name }}
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"
+                          aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                  <!-- Stable aspect ratio container -->
+                  <div style="aspect-ratio: 16/9; width: 100%;">
+                    <iframe
+                      src="{{ embed_url }}?controls=0&rel=0&modestbranding=1"
+                      title="Exercise Demo"
+                      style="width:100%; height:100%; border:0; display:block;"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      id="iframeVideo{{ exercise.id }}">
+                    </iframe>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endwith %}
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-muted">No exercises assigned.</p>
+      {% endif %}
+
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'workout_export_pdf' workout.pk %}" class="btn btn-outline-primary">
+          Export to PDF
+        </a>
+        <a href="{% url 'workout_list_view' %}" class="btn btn-outline-secondary">
+          Back
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var videoModals = document.querySelectorAll('.modal.fade');
+
+    videoModals.forEach(function(modal) {
+        modal.addEventListener('show.bs.modal', function (event) {
+            // Pause all other iframe videos
+            videoModals.forEach(function(otherModal) {
+                if (otherModal !== modal) {
+                    var iframe = otherModal.querySelector('iframe');
+                    if (iframe) {
+                        // Pause the YouTube iframe by resetting the src (stop playback)
+                        iframe.src = iframe.src;
+                    }
+                }
+            });
+        });
+
+        // Also stop video when modal is hidden
+        modal.addEventListener('hidden.bs.modal', function () {
+            var iframe = modal.querySelector('iframe');
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

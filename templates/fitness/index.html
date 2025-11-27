@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Fitness - FitMate{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-0">Fitness</h1>
+      <p class="muted">Track metrics, workouts, and progress.</p>
+    </div>
+    <div>
+      <a class="btn btn-fitmate" href="#">View Progress</a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card form-card">
+        <h5 class="mb-2">Today's Summary</h5>
+        <p class="muted">Weight, BMI, and recent activity.</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card form-card">
+        <h5 class="mb-2">Goals</h5>
+        <p class="muted">Set and track fitness goals.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
