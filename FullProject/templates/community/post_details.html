@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+<link href="{% static 'css/community.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+
+<div class="container py-4">
+    <h2 class="fw-bold">{{ post.title }}</h2>
+<p>By {{ post.author.username }} — {{ post.created_at|date:"Y-m-d H:i" }}</p>
+<p>Category: {{ post.get_category_display }}</p>
+{% if post.author == request.user %}
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <a href="{% url 'update_post' post.id %}" class="btn btn-outline-primary btn-sm">
+        <i class="fa fa-edit"></i> Edit
+    </a>
+    <a href="{% url 'delete_post' post.id %}" class="btn btn-outline-danger btn-sm">
+        <i class="fa fa-trash"></i> Delete
+    </a>
+</div>
+{% endif %}
+
+    {% if post.image %}
+        <img src="{{ post.image.url }}" class="post-detail-image">
+    {% endif %}
+
+    <p>{{ post.content }}</p>
+
+<a href="{% url 'like_post' post.id %}">
+    ❤️ Like ({{ post.like_count }})
+</a>
+
+<hr>
+
+<h3>Comments ({{ post.comment_count }})</h3>
+
+{% for comment in comments %}
+<div>
+    <strong>{{ comment.author.username }}</strong> → {{ comment.content }}
+</div>
+{% empty %}
+<p>No comments yet.</p>
+{% endfor %}
+
+    {% if user.is_authenticated %}
+    <form method="POST" action="{% url 'add_comment' post.id %}" class="comment-form mt-3 d-flex">
+        {% csrf_token %}
+        <input type="text" name="content" placeholder="Write a comment..." class="form-control me-2" required>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+    {% endif %}
+</div>
+
+{% endblock %}

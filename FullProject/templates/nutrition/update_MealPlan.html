@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Update Meal Plan - FitMate{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="card dashboard-welcome text-center mb-4">
+        <div class="card-body">
+            <h1 class="display-4 mb-3">Update Meal Plan</h1>
+            <p class="text-fitmate fw-bold">“Small changes lead to big results.”</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card dashboard-card shadow-sm rounded-4 p-4 hover-shadow">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-fitmate">
+                            <i class="fas fa-save me-2"></i> Update Meal Plan
+                        </button>
+
+                        <a href="{% url 'list_mealplans' %}" class="btn ghost">
+                            <i class="fas fa-arrow-left me-2"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

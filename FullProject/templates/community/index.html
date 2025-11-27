@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+<link href="{% static 'css/community.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container py-4 community-container" >
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+        <h2 class="fw-bold mb-0">Community Hub</h2>
+        <a href="{% url 'create_post' %}" class="btn btn-primary btn-lg shadow-sm">
+            <i class="fa fa-plus-circle me-2"></i> Add Post
+        </a>
+    </div>
+
+    <!-- Search and sort bar -->
+    <form id="filter-form" method="GET" class="d-flex flex-wrap gap-2 align-items-center mb-4 community-controls">
+        <div class="input-group" style="max-width: 400px;">
+            <input type="text" name="q" class="form-control" placeholder="Search posts..." value="{{ current_query }}">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="fa fa-search"></i>
+            </button>
+        </div>
+
+        <div class="ms-auto">
+            <label for="sort-select" class="me-2 fw-semibold">Sort by:</label>
+            <select name="sort" id="sort-select" class="form-select d-inline-block w-auto">
+                <option value="-created_at" {% if current_sort == "-created_at" %}selected{% endif %}>Newest</option>
+                <option value="created_at" {% if current_sort == "created_at" %}selected{% endif %}>Oldest</option>
+                <option value="title" {% if current_sort == "title" %}selected{% endif %}>A–Z</option>
+                <option value="category" {% if current_sort == "category" %}selected{% endif %}>Category</option>
+            </select>
+        </div>
+    </form>
+
+    <!-- JS: auto sort -->
+    <script>
+    document.getElementById('sort-select').addEventListener('change', function() {
+        document.getElementById('filter-form').submit();
+    });
+    </script>
+
+    {% if posts %}
+    <div class="d-flex flex-column gap-4">
+        {% for post in posts %}
+        <div class="card shadow-sm border-0 post-card">
+            {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="img-fluid rounded mb-3 mx-auto d-block">
+            {% endif %}
+            <h4 class="fw-bold">
+                <a href="{% url 'post_details' post.id %}" class="text-decoration-none text-dark">
+                    {{ post.title }}
+                </a>
+            </h4>
+            <p class="post-meta mb-2">
+                <i class="fa fa-user"></i> {{ post.author.username }}
+                <span class="ms-2"><i class="fa fa-calendar-alt"></i> {{ post.created_at|date:"Y-m-d H:i" }}</span>
+            </p>
+            <div class="mb-2"><span class="badge-category">{{ post.get_category_display }}</span></div>
+            <p class="text-start mx-auto" style="max-width: 720px;">{{ post.content|truncatechars:400 }}</p>
+
+            <div class="actions">
+                <!-- Like button -->
+                <form method="POST" action="{% url 'like_post' post.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn like-btn">
+                        <i class="fa fa-heart"></i>
+                        <span class="count">{{ post.like_count }}</span>
+                    </button>
+                </form>
+
+                <!-- View Post (comments link) -->
+                <a href="{% url 'post_details' post.id %}" class="action-btn comment-btn">
+                    <i class="fa fa-comment"></i>
+                    <span class="count">{{ post.comment_count }}</span>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center mt-4">
+        No posts found. Be the first to share something!
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

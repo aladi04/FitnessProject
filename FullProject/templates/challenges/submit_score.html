@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Score - {{ challenge.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="h4">Submit Score for "{{ challenge.title }}"</h2>
+  <p class="text-muted">Enter your points for this challenge.</p>
+
+  <form method="post" action="">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="points" class="form-label">Points</label>
+      <input type="number" step="0.01" name="points" id="points" class="form-control" required>
+    </div>
+    <div>
+      <button class="btn btn-primary" type="submit">Submit</button>
+      <a class="btn btn-secondary" href="{% url 'challenge-list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
