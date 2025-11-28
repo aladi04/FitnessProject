@@ -1,7 +1,31 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Post, Comment
+from .models import Post, Comment, Notification
+
+@login_required
+def notifications_list(request):
+    """
+    Show user's notifications
+    """
+    notifications = request.user.notifications.all()
+    # Mark all as read when viewing the list (optional, or do per-item)
+    # notifications.update(is_read=True) 
+    return render(request, "community/notifications.html", {
+        "notifications": notifications
+    })
+
+@login_required
+def mark_notification_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notification.is_read = True
+    notification.save()
+    
+    # Redirect to the target post if it exists
+    if notification.target_post:
+        return redirect("post_details", post_id=notification.target_post.id)
+    return redirect("notifications_list")
 
 @login_required
 def community_home(request):
@@ -123,7 +147,23 @@ def like_post(request, post_id):
     Calls post.like(user)
     """
     post = get_object_or_404(Post, id=post_id)
-    post.like(request.user)
+    liked = post.like(request.user)
+
+    # Create notification if liked (not unliked) and user is not author
+    if liked and request.user != post.author:
+        Notification.objects.create(
+            recipient=post.author,
+            actor=request.user,
+            verb="liked your post",
+            target_post=post
+        )
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'liked': liked,
+            'like_count': post.like_count
+        })
+
     return redirect("post_details", post_id=post.id)
     
 
@@ -138,4 +178,47 @@ def add_comment(request, post_id):
         comment = request.POST.get("content")
         post.add_comment(request.user, comment)
 
+        # Create notification
+        if request.user != post.author:
+            Notification.objects.create(
+                recipient=post.author,
+                actor=request.user,
+                verb="commented on your post",
+                target_post=post
+            )
+
     return redirect("post_details", post_id=post.id)
+
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    # Users can only delete their own comments
+    if comment.author != request.user:
+        messages.error(request, "You can only delete your own comments.")
+        return redirect("post_details", post_id=comment.post.id)
+
+    post_id = comment.post.id
+    comment.delete()
+    messages.success(request, "Comment deleted successfully.")
+    return redirect("post_details", post_id=post_id)
+
+@login_required
+def update_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+
+    if comment.author != request.user:
+        messages.error(request, "You can only edit your own comments.")
+        return redirect("post_details", post_id=comment.post.id)
+
+    if request.method == "POST":
+        new_content = request.POST.get("content")
+        if new_content:
+            comment.content = new_content
+            comment.save()
+            messages.success(request, "Comment updated successfully.")
+            return redirect("post_details", post_id=comment.post.id)
+
+    # Render a simple edit template or handle inline editing via JS? 
+    # For now let's create a dedicated template for editing comments
+    return render(request, "community/update_comment.html", {"comment": comment})
