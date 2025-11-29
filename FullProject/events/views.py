@@ -6,6 +6,17 @@ from django.db.models import Q,Sum, F
 from django.db.models.functions import Coalesce
 from .models import Event, Booking
 from .forms import EventSearchForm, BookingForm, BookingUpdateForm
+import json
+import logging
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render
+from django.urls import reverse
+from django.utils import timezone
+
+logger = logging.getLogger(__name__)
+
+
 @login_required
 def event_list(request):
     # .filter() to get only UPCOMING events but we can use .all() instead to fetch all events 
@@ -179,3 +190,41 @@ def delete_booking(request, pk):
         'booking': booking,
     }
     return render(request, 'events/delete_booking.html', context)
+
+@login_required
+def booking_calendar(request):
+    """
+    Renders a calendar showing the user's booked events.
+    Also supports returning JSON events if ?format=json is supplied.
+    """
+    bookings = Booking.objects.filter(user=request.user).select_related('event')
+
+    events_list = []
+    now = timezone.now()
+
+    for booking in bookings:
+        ev = booking.event
+        # Use ISO datetime so FullCalendar can show time if you want.
+        start_iso = ev.date.isoformat()
+        is_upcoming = ev.date > now
+
+        event_obj = {
+            "id": booking.pk,
+            "title": ev.title,
+            "start": start_iso,
+            "url": reverse('event-detail', args=[ev.pk]),
+            # optional: color to visually separate upcoming vs past
+            "backgroundColor": "#10b981" if is_upcoming else "#94a3b8",
+            "borderColor": "#0f766e" if is_upcoming else "#64748b",
+            "allDay": False,
+        }
+        events_list.append(event_obj)
+
+    # JSON endpoint (useful if you prefer AJAX)
+    if request.GET.get('format') == 'json':
+        return JsonResponse(events_list, safe=False)
+
+    # Otherwise render template with embedded JSON
+    return render(request, 'events/calendar.html', {
+        'bookings_json': json.dumps(events_list, default=str),
+    })

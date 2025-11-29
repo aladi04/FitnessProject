@@ -1,0 +1,161 @@
+{# templates/events/calendar.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Bookings Calendar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="h3 mb-0">Bookings Calendar</h1>
+      <p class="text-muted mb-0">Days with your booked events are highlighted below. Click an event for details.</p>
+    </div>
+    <div>
+      <a class="btn btn-outline-primary" href="{% url 'booking-history' %}">My Bookings</a>
+      <a class="btn btn-primary ms-2" href="{% url 'event-list' %}">Browse Events</a>
+    </div>
+  </div>
+
+  <div id="calendar-container">
+    <div id="calendar"></div>
+    <div id="calendar-message" style="margin-top:12px;"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * Dynamically load a CSS file and return a Promise that resolves on load.
+ */
+function loadCSS(href) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector('link[href="' + href + '"]')) return resolve();
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = href;
+    l.onload = () => resolve();
+    l.onerror = () => reject(new Error('CSS failed to load: ' + href));
+    document.head.appendChild(l);
+  });
+}
+
+/**
+ * Dynamically load a JS script and return a Promise that resolves on load.
+ */
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    // if script already present and FullCalendar exists, resolve
+    if (document.querySelector('script[src="' + src + '"]') && window.FullCalendar) {
+      return resolve();
+    }
+    // if same script tag exists but still no FullCalendar, still wait for load (avoid duplicates)
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Script failed to load: ' + src));
+    document.body.appendChild(s);
+  });
+}
+
+/**
+ * Initialize the FullCalendar instance.
+ */
+function initFullCalendar(eventsData) {
+  const calendarEl = document.getElementById('calendar');
+  const messageEl = document.getElementById('calendar-message');
+  if (!window.FullCalendar || typeof window.FullCalendar.Calendar !== 'function') {
+    throw new Error('FullCalendar is not available after loading the script.');
+  }
+
+  // Clear any previous calendar content (in case re-initializing)
+  calendarEl.innerHTML = '';
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,listWeek'
+    },
+    events: eventsData,
+    eventClick: function(info) {
+      if (info.event.url) {
+        window.location.href = info.event.url;
+        info.jsEvent.preventDefault();
+      }
+    },
+    dayMaxEventRows: true,
+    displayEventTime: true,
+    eventDidMount: function(info) {
+      info.el.setAttribute('title', info.event.title);
+    }
+  });
+
+  calendar.render();
+  if (!eventsData || eventsData.length === 0) {
+    messageEl.innerText = "You don't have any bookings to show on the calendar.";
+  } else {
+    messageEl.innerText = '';
+  }
+}
+
+/**
+ * Main flow:
+ * 1. Show loading message
+ * 2. Fetch JSON events
+ * 3. Load CSS + Script
+ * 4. Initialize calendar
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  const messageEl = document.getElementById('calendar-message');
+  messageEl.innerText = 'Loading your bookings and calendar library...';
+
+  // endpoint to fetch events (same-origin to include cookies/auth)
+  const eventsUrl = window.location.pathname + '?format=json';
+
+  fetch(eventsUrl, { credentials: 'same-origin' })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to fetch events JSON: ' + response.status);
+      return response.json();
+    })
+    .then(eventsData => {
+      // CDN locations
+      const fcCss = 'https://cdn.jsdelivr.net/npm/fullcalendar@5.11.2/main.min.css';
+      const fcJs  = 'https://cdn.jsdelivr.net/npm/fullcalendar@5.11.2/main.min.js';
+
+      // Load CSS then script, then init calendar
+      return loadCSS(fcCss)
+        .then(() => loadScript(fcJs))
+        .then(() => {
+          // small delay guard for environments that reorder execution (rare)
+          return new Promise((resolve, reject) => {
+            try {
+              if (!window.FullCalendar) {
+                // try one more tick
+                setTimeout(() => {
+                  if (!window.FullCalendar) return reject(new Error('FullCalendar did not become available.'));
+                  resolve();
+                }, 50);
+              } else {
+                resolve();
+              }
+            } catch (e) { reject(e); }
+          }).then(() => {
+            initFullCalendar(eventsData);
+          });
+        });
+    })
+    .catch(err => {
+      console.error('Error loading calendar events:', err);
+      // show actionable message to the user
+      const userMsg = (err && err.message) ? err.message : 'Unknown error';
+      messageEl.innerText = 'Could not load calendar: ' + userMsg + '. Check the browser console and the Network tab for failed CDN requests.';
+    });
+});
+</script>
+{% endblock %}
