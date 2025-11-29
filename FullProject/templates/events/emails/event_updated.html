@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Event updated: {{ event.title }}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    /* Inline-friendly minimal styles */
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; padding:0; background:#f4f6f8; color:#111827; }
+    .container { max-width:680px; margin:24px auto; background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 6px 18px rgba(15,23,42,0.06); }
+    .header { background:linear-gradient(90deg,#6366f1,#8b5cf6); padding:20px; color:white; text-align:center; }
+    .content { padding:24px; }
+    h1 { margin:0 0 8px 0; font-size:20px; }
+    p { margin:0 0 12px 0; color:#374151; line-height:1.5; }
+    .meta { background:#f8fafc; padding:12px; border-radius:8px; margin:12px 0; font-size:14px; color:#374151; }
+    .btn { display:inline-block; margin-top:12px; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:600; background:linear-gradient(90deg,#6366f1,#8b5cf6); color:white; }
+    .footer { padding:16px; font-size:13px; color:#6b7280; text-align:center; }
+    .small { font-size:13px; color:#6b7280; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>{{ site_name }}</h2>
+    </div>
+
+    <div class="content">
+      <h1>Update: {{ event.title }}</h1>
+      <p>Hi there, this is a quick update about an event you booked.</p>
+
+      <div class="meta">
+        <strong>Event:</strong> {{ event.title }}<br>
+        <strong>Previous date/time:</strong>
+        {% if previous_date %}
+          {{ previous_date|date:"F j, Y" }} at {{ previous_date|date:"H:i" }}
+        {% else %}
+          N/A
+        {% endif %}
+        <br>
+        <strong>New date/time:</strong> {{ new_date|date:"F j, Y" }} at {{ new_date|date:"H:i" }}
+        <br><br>
+        <strong>Previous location:</strong> {{ previous_location|default:"N/A" }}<br>
+        <strong>New location:</strong> {{ new_location|default:"N/A" }}
+      </div>
+
+      <p class="small">If this change causes a conflict for you, please log into your account to change or cancel your booking.</p>
+
+      
+      <a href="{{ event_url }}" class="btn">View Event</a>
+
+      <hr style="margin:18px 0; border:none; border-top:1px solid #eef2f7;" />
+
+      <p class="small">Updated by: {{ admin_user.get_full_name|default:admin_user.username }}</p>
+      <p class="footer">Thanks — the {{ site_name }} team</p>
+    </div>
+  </div>
+</body>
+</html>
