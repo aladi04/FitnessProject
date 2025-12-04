@@ -1,8 +1,4 @@
 from django.contrib import admin
-
-
-# Register your models here.
-
 from .models import Workout, Exercise
 
 
@@ -24,4 +20,3 @@ class ExerciseAdmin(admin.ModelAdmin):
 
 admin.site.register(Workout, WorkoutAdmin)
 admin.site.register(Exercise, ExerciseAdmin)
-

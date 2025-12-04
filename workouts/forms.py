@@ -38,7 +38,7 @@ class ExerciseForm(forms.ModelForm):
 class WorkoutForm(forms.ModelForm):
     class Meta:
         model = Workout
-        fields = '__all__'
+        fields = ['name', 'description', 'is_completed', 'exercises']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
             'exercises': forms.CheckboxSelectMultiple(),  # show checkboxes instead of a multiselect

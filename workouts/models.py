@@ -1,8 +1,7 @@
 from django.db import models
-
-# Create your models here.
-
 from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.contrib.auth.models import User
 
 
 CATEGORY_CHOICES = [
@@ -61,6 +60,14 @@ class Workout(models.Model):
     description = models.TextField(blank=True, null=True)
     is_completed = models.BooleanField(default=False)
 
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="workouts",
+        null=True,
+        blank=True
+    )
+
     exercises = models.ManyToManyField(Exercise, related_name="workouts")
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -68,4 +75,3 @@ class Workout(models.Model):
 
     def __str__(self):
         return self.name
-
