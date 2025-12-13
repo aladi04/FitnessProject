@@ -4,33 +4,181 @@
 {% block content %}
 <div class="container py-4">
 
-    <div class="card dashboard-welcome text-center mb-4">
-        <div class="card-body">
-            <h1 class="display-4 mb-3">Update Meal Plan</h1>
-            <p class="text-fitmate fw-bold">“Small changes lead to big results.”</p>
+    <!-- Hero Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card dashboard-welcome text-center">
+                <div class="card-body">
+                    <h1 class="display-4 mb-3">Update Meal Plan</h1>
+                    <p class="text-fitmate fw-bold">"Small changes lead to big results."</p>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Form Card -->
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card dashboard-card shadow-sm rounded-4 p-4 hover-shadow">
                 <form method="post">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Please correct the errors below:</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
 
-                    <div class="d-flex justify-content-between mt-4">
+                    <!-- Date Field -->
+                    <div class="mb-4">
+                        <label for="{{ form.day.id_for_label }}" class="form-label fw-bold">Plan Date</label>
+                        {{ form.day }}
+                    </div>
+
+                    <!-- Goals Section -->
+                    <div class="goals-section mb-4">
+                        <h5 class="text-fitmate mb-3">Daily Nutrition Goals</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.calorie_goal.id_for_label }}" class="form-label">
+                                        <i class="fas fa-fire text-danger me-2"></i>Calorie Goal
+                                    </label>
+                                    {{ form.calorie_goal }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.protein_goal.id_for_label }}" class="form-label">
+                                        <i class="fas fa-dumbbell text-info me-2"></i>Protein Goal (g)
+                                    </label>
+                                    {{ form.protein_goal }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.carb_goal.id_for_label }}" class="form-label">
+                                        <i class="fas fa-bread-slice text-warning me-2"></i>Carb Goal (g)
+                                    </label>
+                                    {{ form.carb_goal }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.fat_goal.id_for_label }}" class="form-label">
+                                        <i class="fas fa-oil-can text-danger me-2"></i>Fat Goal (g)
+                                    </label>
+                                    {{ form.fat_goal }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes Section -->
+                    <div class="mb-4">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-sticky-note text-fitmate me-2"></i>Notes
+                        </label>
+                        {{ form.notes }}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                         <button type="submit" class="btn btn-fitmate">
                             <i class="fas fa-save me-2"></i> Update Meal Plan
                         </button>
-
-                        <a href="{% url 'list_mealplans' %}" class="btn ghost">
-                            <i class="fas fa-arrow-left me-2"></i> Cancel
-                        </a>
+                        <div>
+                            <a href="{% url 'nutrition:detail_mealplan' object.pk %}" class="btn ghost me-2">
+                                <i class="fas fa-times me-2"></i> Cancel
+                            </a>
+                            <a href="{% url 'nutrition:manage_meal_plan_meals' object.pk %}" class="btn btn-outline-fitmate">
+                                <i class="fas fa-utensils me-2"></i> Manage Meals
+                            </a>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
 </div>
+
+<style>
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    transition: 0.3s;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.btn-fitmate {
+    background-color: #6C63FF;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    font-weight: 600;
+}
+.btn-fitmate:hover {
+    background-color: #5848c2;
+    color: white;
+    transform: translateY(-2px);
+    transition: 0.2s;
+}
+.text-fitmate {
+    color: #6C63FF;
+}
+.dashboard-card {
+    border: none;
+}
+.dashboard-welcome {
+    background: #f8f9fa;
+    border-radius: 1rem;
+}
+.ghost {
+    background-color: transparent;
+    color: #6C63FF;
+    border: 1px solid #6C63FF;
+    padding: 10px 25px;
+}
+.ghost:hover {
+    background-color: #6C63FF;
+    color: white;
+}
+.btn-outline-fitmate {
+    border-color: #6C63FF;
+    color: #6C63FF;
+    padding: 10px 25px;
+}
+.btn-outline-fitmate:hover {
+    background-color: #6C63FF;
+    color: white;
+}
+.form-control {
+    border: 1px solid #dee2e6;
+    padding: 12px 15px;
+    border-radius: 8px;
+}
+.form-control:focus {
+    border-color: #6C63FF;
+    box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.25);
+}
+.form-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.goals-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid #6C63FF;
+}
+</style>
 {% endblock %}

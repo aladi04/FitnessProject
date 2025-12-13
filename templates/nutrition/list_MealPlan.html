@@ -10,8 +10,8 @@
             <div class="card dashboard-welcome text-center">
                 <div class="card-body">
                     <h1 class="display-4 mb-3">Your Meal Plans</h1>
-                    <p class="text-fitmate fw-bold">“Plan smart. Eat better. Live healthier.”</p>
-                    <a href="{% url 'add_mealplan' %}" class="btn btn-fitmate mt-3">
+                    <p class="text-fitmate fw-bold">"Plan smart. Eat better. Live healthier."</p>
+                    <a href="{% url 'nutrition:add_mealplan' %}" class="btn btn-fitmate mt-3">
                         <i class="fas fa-plus me-2"></i> Add Meal Plan
                     </a>
                 </div>
@@ -19,80 +19,157 @@
         </div>
     </div>
 
-    <!-- Cards Grid -->
+    <!-- Meal Plans Grid -->
     <div class="row">
         {% for mealplan in mealplans %}
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm rounded-4 p-3 hover-shadow">
-                <h4 class="text-fitmate">{{ mealplan.day }}</h4>
-                <hr>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm rounded-4 p-4 hover-shadow">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h4 class="text-fitmate mb-0">{{ mealplan.day }}</h4>
+                    <span class="badge {% if mealplan.calorie_progress > 100 %}bg-danger{% else %}bg-success{% endif %}">
+                        {{ mealplan.calorie_progress|floatformat:0 }}%
+                    </span>
+                </div>
 
-                <p><strong>Breakfast:</strong>
-                    {% if mealplan.breakfast.all %}
-                        {% for ingredient in mealplan.breakfast.all %}
-                            {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        None
-                    {% endif %}
-                </p>
+                <!-- Nutrition Summary -->
+                <div class="row text-center mb-3">
+                    <div class="col-3">
+                        <h6 class="text-primary">{{ mealplan.nutrition_totals.calories|floatformat:0 }}</h6>
+                        <small class="text-muted">Calories</small>
+                    </div>
+                    <div class="col-3">
+                        <h6 class="text-info">{{ mealplan.nutrition_totals.proteins|floatformat:1 }}g</h6>
+                        <small class="text-muted">Protein</small>
+                    </div>
+                    <div class="col-3">
+                        <h6 class="text-warning">{{ mealplan.nutrition_totals.carbs|floatformat:1 }}g</h6>
+                        <small class="text-muted">Carbs</small>
+                    </div>
+                    <div class="col-3">
+                        <h6 class="text-danger">{{ mealplan.nutrition_totals.fats|floatformat:1 }}g</h6>
+                        <small class="text-muted">Fat</small>
+                    </div>
+                </div>
 
-                <p><strong>Lunch:</strong>
-                    {% if mealplan.lunch.all %}
-                        {% for ingredient in mealplan.lunch.all %}
-                            {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        None
-                    {% endif %}
-                </p>
+                <!-- Progress Bars -->
+                <div class="mb-3">
+                    <small class="text-muted">Calories: {{ mealplan.nutrition_totals.calories|floatformat:0 }} / {{ mealplan.calorie_goal }}</small>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar {% if mealplan.calorie_progress > 100 %}bg-danger{% else %}bg-success{% endif %}" 
+                             style="width: {{ mealplan.calorie_progress }}%"></div>
+                    </div>
+                </div>
 
-                <p><strong>Dinner:</strong>
-                    {% if mealplan.dinner.all %}
-                        {% for ingredient in mealplan.dinner.all %}
-                            {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        None
-                    {% endif %}
-                </p>
+                <!-- Meal Count -->
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-utensils me-1"></i>
+                        {{ mealplan.meals.count }} meals planned
+                    </small>
+                </div>
 
-                <p><strong>Snacks:</strong>
-                    {% if mealplan.snacks.all %}
-                        {% for snack in mealplan.snacks.all %}
-                            {{ snack.name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        None
-                    {% endif %}
-                </p>
-
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="{% url 'detail_mealplan' mealplan.pk %}" class="btn btn-fitmate btn-sm">
-                        <i class="fas fa-eye"></i> View
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'nutrition:detail_mealplan' mealplan.pk %}" class="btn btn-fitmate btn-sm">
+                        <i class="fas fa-eye me-1"></i> View
                     </a>
-                    <a href="{% url 'update_mealplan' mealplan.pk %}" class="btn btn-fitmate btn-sm">
-                        <i class="fas fa-edit"></i> Edit
+                    <a href="{% url 'nutrition:manage_meal_plan_meals' mealplan.pk %}" class="btn btn-outline-fitmate btn-sm">
+                        <i class="fas fa-utensils me-1"></i> Meals
                     </a>
-                    <a href="{% url 'delete_mealplan' mealplan.pk %}" class="btn ghost btn-sm">
-                        <i class="fas fa-trash-alt"></i> Delete
+                    <a href="{% url 'nutrition:update_mealplan' mealplan.pk %}" class="btn btn-outline-fitmate btn-sm">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                    <a href="{% url 'nutrition:delete_mealplan' mealplan.pk %}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-trash-alt me-1"></i> Delete
                     </a>
                 </div>
             </div>
         </div>
         {% empty %}
-        <p class="text-center">No meal plans available yet.</p>
+        <div class="col-12">
+            <div class="card dashboard-card shadow-sm rounded-4 p-5 text-center">
+                <h4 class="text-muted mb-3">No Meal Plans Yet</h4>
+                <p class="text-muted mb-4">Start planning your meals to track your nutrition goals!</p>
+                <a href="{% url 'nutrition:add_mealplan' %}" class="btn btn-fitmate">
+                    <i class="fas fa-plus me-2"></i> Create Your First Meal Plan
+                </a>
+            </div>
+        </div>
         {% endfor %}
     </div>
 
-    <!-- Back Button to Main Nutrition Page -->
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Meal plans pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Back Button -->
     <div class="row mt-5">
         <div class="col text-center">
-            <a class="btn btn-outline-secondary btn-lg" href="/nutrition/">
-                <i class="fas fa-arrow-left me-2"></i> Back to Nutrition
+            <a class="btn btn-outline-secondary btn-lg" href="{% url 'nutrition:index' %}">
+                <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
             </a>
         </div>
     </div>
 
 </div>
+
+<style>
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    transition: 0.3s;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.btn-fitmate {
+    background-color: #6C63FF;
+    color: white;
+    border: none;
+}
+.btn-fitmate:hover {
+    background-color: #5848c2;
+    color: white;
+}
+.text-fitmate {
+    color: #6C63FF;
+}
+.dashboard-card {
+    border: none;
+}
+.dashboard-welcome {
+    background: #f8f9fa;
+    border-radius: 1rem;
+}
+.btn-outline-fitmate {
+    border-color: #6C63FF;
+    color: #6C63FF;
+}
+.btn-outline-fitmate:hover {
+    background-color: #6C63FF;
+    color: white;
+}
+</style>
 {% endblock %}

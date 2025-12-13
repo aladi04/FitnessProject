@@ -1,0 +1,743 @@
+{% extends 'base.html' %}
+{% block title %}Manage Meals - FitMate{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col">
+            <div class="card pro-card pro-card-header text-center">
+                <div class="card-body py-4">
+                    <h1 class="display-5 mb-2 text-white">Manage Meals</h1>
+                    <p class="lead text-white opacity-90 mb-0">Meal Plan for <strong>{{ mealplan.day }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card pro-card" style="overflow: visible;">
+                <div class="card-header bg-transparent border-bottom-0">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus-circle text-primary me-2"></i>
+                        Quick Add Ingredients
+                    </h4>
+                </div>
+                <div class="card-body" style="position: relative; overflow: visible; padding-bottom: 20px;">
+                    <form method="post" id="ingredientForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add_ingredient">
+                        
+                        <div class="row g-3 align-items-end">
+                            <!-- Meal Type Pills -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Meal Type</label>
+                                <div class="meal-type-pills">
+                                    <input type="radio" class="btn-check" name="meal_type" id="breakfast" value="breakfast" required>
+                                    <label class="btn btn-pill" for="breakfast">🍳 Breakfast</label>
+                                    
+                                    <input type="radio" class="btn-check" name="meal_type" id="lunch" value="lunch">
+                                    <label class="btn btn-pill" for="lunch">🥗 Lunch</label>
+                                    
+                                    <input type="radio" class="btn-check" name="meal_type" id="dinner" value="dinner">
+                                    <label class="btn btn-pill" for="dinner">🍲 Dinner</label>
+                                    
+                                    <input type="radio" class="btn-check" name="meal_type" id="snack" value="snack">
+                                    <label class="btn btn-pill" for="snack">🍎 Snack</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Food Search - FIXED VERSION -->
+                            <div class="col-md-4 position-relative">
+                                <label class="form-label fw-semibold">Food Item</label>
+                                <div class="search-wrapper">
+                                    <input type="text" id="ingredientSearch" class="form-control" placeholder="🔍 Search ingredients...">
+                                    <div id="searchResults" class="search-results"></div>
+                                </div>
+                                
+                                <!-- CRITICAL FIX: Hidden input for ingredient_id -->
+                                <input type="hidden" name="ingredient_id" id="ingredientId" value="">
+                                <div id="selectedIngredient" class="selected-ingredient mt-2 p-2 bg-light rounded" style="display: none;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span id="selectedIngredientName" class="fw-semibold"></span>
+                                        <button type="button" id="clearSelection" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted mt-1 d-block">Select an ingredient from search results</small>
+                            </div>
+                            
+                            <!-- Quantity with Presets -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Quantity (grams)</label>
+                                <div class="input-group">
+                                    <input type="number" name="quantity" class="form-control" value="100" min="1" step="1" required id="quantityInput">
+                                </div>
+                                <div class="quantity-presets mt-2">
+                                    <small class="text-muted d-block mb-1">Quick presets:</small>
+                                    <div class="btn-group btn-group-sm w-100">
+                                        <button type="button" class="btn btn-outline-secondary preset-btn" data-value="50">50g</button>
+                                        <button type="button" class="btn btn-outline-secondary preset-btn" data-value="100">100g</button>
+                                        <button type="button" class="btn btn-outline-secondary preset-btn" data-value="150">150g</button>
+                                        <button type="button" class="btn btn-outline-secondary preset-btn" data-value="200">200g</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Add Button with Calorie Preview -->
+                            <div class="col-md-2">
+                                <div id="caloriePreview" class="calorie-preview text-center mb-2 small text-muted">
+                                    ~0 cal
+                                </div>
+                                <button type="submit" class="btn btn-pro w-100" id="addButton">
+                                    <i class="fas fa-plus me-1"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rest of your template remains exactly the same -->
+    <!-- Daily Nutrition Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card pro-card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">📊 Daily Nutrition Summary</h5>
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="nutrition-card calorie">
+                                <div class="nutrition-value">{{ daily_totals.calories|default:0|floatformat:0 }}</div>
+                                <div class="nutrition-label">Calories</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="nutrition-card protein">
+                                <div class="nutrition-value">{{ daily_totals.proteins|default:0|floatformat:1 }}g</div>
+                                <div class="nutrition-label">Protein</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="nutrition-card carb">
+                                <div class="nutrition-value">{{ daily_totals.carbs|default:0|floatformat:1 }}g</div>
+                                <div class="nutrition-label">Carbs</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="nutrition-card fat">
+                                <div class="nutrition-value">{{ daily_totals.fats|default:0|floatformat:1 }}g</div>
+                                <div class="nutrition-label">Fat</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meals by Type -->
+    {% for meal_type, meals in meals_by_type.items %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card pro-card">
+                <div class="card-header bg-transparent border-bottom-0 d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        {% if meal_type == 'breakfast' %}🍳{% elif meal_type == 'lunch' %}🥗{% elif meal_type == 'dinner' %}🍲{% else %}🍎{% endif %}
+                        {{ meal_type|title }}
+                    </h4>
+                    <span class="badge bg-primary fs-6">
+                        {% for meal in meals %}
+                            {{ meal.total_calories|floatformat:0 }}
+                        {% empty %}
+                            0
+                        {% endfor %}
+                        cal
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% if meals %}
+                        {% for meal in meals %}
+                        <div class="meal-card">
+                            {% if meal.ingredients.all %}
+                            <div class="table-responsive">
+                                <table class="table table-borderless mb-3">
+                                    <thead>
+                                        <tr class="border-bottom">
+                                            <th class="fw-semibold text-muted">Food</th>
+                                            <th class="fw-semibold text-muted text-center">Quantity</th>
+                                            <th class="fw-semibold text-muted text-center">Calories</th>
+                                            <th class="fw-semibold text-muted text-center">Protein</th>
+                                            <th class="fw-semibold text-muted text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for meal_ingredient in meal.ingredients.all %}
+                                        <tr class="ingredient-row">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-carrot text-primary me-3"></i>
+                                                    <div>
+                                                        <strong>{{ meal_ingredient.ingredient.name }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            Carbs: {{ meal_ingredient.calculated_carbs|floatformat:1 }}g • 
+                                                            Fat: {{ meal_ingredient.calculated_fats|floatformat:1 }}g
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="quantity-badge">{{ meal_ingredient.quantity }}g</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="calorie-badge">{{ meal_ingredient.calculated_calories|floatformat:0 }}</span>
+                                                <small class="text-muted">cal</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="protein-badge">{{ meal_ingredient.calculated_proteins|floatformat:1 }}</span>
+                                                <small class="text-muted">g</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <form method="post" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="remove_ingredient">
+                                                    <input type="hidden" name="meal_ingredient_id" value="{{ meal_ingredient.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger btn-remove" 
+                                                            data-ingredient-name="{{ meal_ingredient.ingredient.name }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Meal Nutrition Summary -->
+                            <div class="nutrition-summary">
+                                <div class="row text-center">
+                                    <div class="col-3">
+                                        <div class="summary-item calorie">
+                                            <div class="summary-value">{{ meal.total_calories|floatformat:0 }}</div>
+                                            <div class="summary-label">Calories</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="summary-item protein">
+                                            <div class="summary-value">{{ meal.total_proteins|floatformat:1 }}g</div>
+                                            <div class="summary-label">Protein</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="summary-item carb">
+                                            <div class="summary-value">{{ meal.total_carbs|floatformat:1 }}g</div>
+                                            <div class="summary-label">Carbs</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="summary-item fat">
+                                            <div class="summary-value">{{ meal.total_fats|floatformat:1 }}g</div>
+                                            <div class="summary-label">Fat</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="empty-state text-center py-5">
+                                <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No ingredients added yet</h5>
+                                <p class="text-muted">Start by adding ingredients above</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No {{ meal_type }} items yet</h5>
+                        <p class="text-muted">Add ingredients using the form above</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Action Buttons -->
+    <div class="row mt-5">
+        <div class="col text-center">
+            <a href="{% url 'nutrition:detail_mealplan' mealplan.pk %}" class="btn btn-pro me-3">
+                <i class="fas fa-chart-bar me-2"></i>View Progress
+            </a>
+            <a href="{% url 'nutrition:list_mealplans' %}" class="btn btn-pro-outline">
+                <i class="fas fa-arrow-left me-2"></i>Back to Plans
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Enhanced Card Styles */
+.pro-card {
+    background: white;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+.pro-card:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+.pro-card-header {
+    background: linear-gradient(135deg, #6C63FF, #564fd1);
+    color: white;
+}
+
+/* Button Styles */
+.btn-pro {
+    background: linear-gradient(135deg, #6C63FF, #564fd1);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-pro:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+    color: white;
+}
+.btn-pro-outline {
+    background: transparent;
+    border: 2px solid #6C63FF;
+    color: #6C63FF;
+    border-radius: 12px;
+    padding: 10px 22px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-pro-outline:hover {
+    background: #6C63FF;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Meal Type Pills */
+.meal-type-pills {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.btn-pill {
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    background: white;
+    color: #64748b;
+    transition: all 0.2s ease;
+    text-align: center;
+    cursor: pointer;
+}
+.btn-check:checked + .btn-pill {
+    border-color: #6C63FF;
+    background: #6C63FF;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* FIXED: Search Improvements */
+.search-wrapper {
+    position: relative;
+}
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    margin-top: 4px;
+}
+.search-result-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+.search-result-item:hover {
+    background: #f8fafc;
+}
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* Nutrition Cards */
+.nutrition-card {
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    transition: all 0.3s ease;
+}
+.nutrition-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.nutrition-card.calorie { border-left: 4px solid #6C63FF; }
+.nutrition-card.protein { border-left: 4px solid #3B82F6; }
+.nutrition-card.carb { border-left: 4px solid #F59E0B; }
+.nutrition-card.fat { border-left: 4px solid #EF4444; }
+.nutrition-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.nutrition-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Meal Cards */
+.meal-card {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.ingredient-row {
+    transition: all 0.2s ease;
+}
+.ingredient-row:hover {
+    background: rgba(255,255,255,0.7);
+    border-radius: 8px;
+}
+
+/* Badges */
+.quantity-badge, .calorie-badge, .protein-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.quantity-badge { background: #e2e8f0; color: #475569; }
+.calorie-badge { background: #ede9fe; color: #6C63FF; }
+.protein-badge { background: #dbeafe; color: #3B82F6; }
+
+/* Summary Items */
+.summary-item {
+    padding: 15px;
+}
+.summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.summary-item.calorie .summary-value { color: #6C63FF; }
+.summary-item.protein .summary-value { color: #3B82F6; }
+.summary-item.carb .summary-value { color: #F59E0B; }
+.summary-item.fat .summary-value { color: #EF4444; }
+.summary-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Form Elements */
+.form-select, .form-control {
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+}
+.form-select:focus, .form-control:focus {
+    border-color: #6C63FF;
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Calorie Preview */
+.calorie-preview {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #f1f5f9;
+}
+
+/* Empty States */
+.empty-state {
+    opacity: 0.7;
+}
+.empty-state:hover {
+    opacity: 1;
+}
+
+/* Remove Button */
+.btn-remove {
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+.btn-remove:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Quantity Presets */
+.quantity-presets .btn {
+    border-radius: 6px;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+}
+.preset-btn.active {
+    background: #6C63FF;
+    color: white;
+    border-color: #6C63FF;
+}
+
+/* Selected Ingredient */
+.selected-ingredient {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-left: 4px solid #6C63FF;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('ingredientSearch');
+    const searchResults = document.getElementById('searchResults');
+    const ingredientIdInput = document.getElementById('ingredientId');
+    const quantityInput = document.getElementById('quantityInput');
+    const caloriePreview = document.getElementById('caloriePreview');
+    const presetButtons = document.querySelectorAll('.preset-btn');
+    const mealTypeRadios = document.querySelectorAll('input[name="meal_type"]');
+    const selectedIngredientDiv = document.getElementById('selectedIngredient');
+    const selectedIngredientName = document.getElementById('selectedIngredientName');
+    const clearSelectionBtn = document.getElementById('clearSelection');
+    const addButton = document.getElementById('addButton');
+    
+    let allIngredients = [];
+    let selectedIngredient = null;
+
+    // Initialize ingredients - get from Django template
+    {% for ingredient in all_ingredients %}
+    allIngredients.push({
+        id: "{{ ingredient.id }}",
+        name: "{{ ingredient.name|escapejs }}",
+        calories: {{ ingredient.calories|default:0 }},
+        protein: {{ ingredient.proteins|default:0 }}
+    });
+    {% endfor %}
+
+    console.log("Loaded ingredients:", allIngredients);
+
+    // Enhanced search functionality
+    if (searchInput && searchResults) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            searchResults.innerHTML = '';
+            
+            if (searchTerm.length < 1) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            const matches = allIngredients.filter(ingredient => 
+                ingredient.name.toLowerCase().includes(searchTerm)
+            ).slice(0, 8);
+            
+            if (matches.length > 0) {
+                matches.forEach(ingredient => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.innerHTML = `
+                        <div class="fw-semibold">${ingredient.name}</div>
+                        <small class="text-muted">${ingredient.calories} cal / 100g • ${ingredient.protein}g protein</small>
+                    `;
+                    div.addEventListener('click', function() {
+                        console.log("Selected ingredient:", ingredient);
+                        selectIngredient(ingredient);
+                    });
+                    searchResults.appendChild(div);
+                });
+                searchResults.style.display = 'block';
+            } else {
+                const div = document.createElement('div');
+                div.className = 'search-result-item text-muted';
+                div.textContent = 'No ingredients found';
+                searchResults.appendChild(div);
+                searchResults.style.display = 'block';
+            }
+        });
+        
+        // Hide results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        // Show results when focusing on search input
+        searchInput.addEventListener('focus', function() {
+            if (searchInput.value.length >= 1) {
+                // Trigger input event to show results
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+
+    // Select ingredient function
+    function selectIngredient(ingredient) {
+        selectedIngredient = ingredient;
+        ingredientIdInput.value = ingredient.id;
+        searchInput.value = ingredient.name;
+        selectedIngredientName.textContent = ingredient.name;
+        selectedIngredientDiv.style.display = 'block';
+        searchResults.style.display = 'none';
+        
+        console.log("Setting ingredientIdInput value to:", ingredient.id);
+        updateCaloriePreview();
+        updateAddButtonState();
+    }
+
+    // Clear selection
+    if (clearSelectionBtn) {
+        clearSelectionBtn.addEventListener('click', function() {
+            selectedIngredient = null;
+            ingredientIdInput.value = '';
+            searchInput.value = '';
+            selectedIngredientDiv.style.display = 'none';
+            updateCaloriePreview();
+            updateAddButtonState();
+        });
+    }
+
+    // Quantity presets
+    presetButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            quantityInput.value = value;
+            
+            // Update active state
+            presetButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            updateCaloriePreview();
+        });
+    });
+
+    // Update calorie preview
+    function updateCaloriePreview() {
+        const quantity = parseInt(quantityInput.value) || 0;
+        
+        if (selectedIngredient && quantity > 0) {
+            const calories = (selectedIngredient.calories * quantity / 100).toFixed(0);
+            const protein = (selectedIngredient.protein * quantity / 100).toFixed(1);
+            caloriePreview.innerHTML = `~${calories} cal • ${protein}g protein`;
+            caloriePreview.style.color = '#6C63FF';
+            caloriePreview.style.fontWeight = '600';
+        } else {
+            caloriePreview.innerHTML = '~0 cal • 0g protein';
+            caloriePreview.style.color = '#94a3b8';
+        }
+    }
+
+    // Update add button state
+    function updateAddButtonState() {
+        const selectedMealType = document.querySelector('input[name="meal_type"]:checked');
+        const hasIngredient = selectedIngredient !== null;
+        
+        if (selectedMealType && hasIngredient) {
+            addButton.disabled = false;
+            addButton.classList.remove('btn-secondary');
+            addButton.classList.add('btn-pro');
+        } else {
+            addButton.disabled = true;
+            addButton.classList.remove('btn-pro');
+            addButton.classList.add('btn-secondary');
+        }
+    }
+
+    // Event listeners
+    quantityInput.addEventListener('input', updateCaloriePreview);
+    
+    mealTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateAddButtonState);
+    });
+
+    // Form validation
+    const form = document.getElementById('ingredientForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const selectedMealType = document.querySelector('input[name="meal_type"]:checked');
+            
+            console.log("Form submission - meal_type:", selectedMealType?.value);
+            console.log("Form submission - ingredient_id:", ingredientIdInput.value);
+            console.log("Form submission - quantity:", quantityInput.value);
+            
+            if (!selectedMealType) {
+                e.preventDefault();
+                alert('❌ Please select a meal type');
+                return false;
+            }
+            
+            if (!ingredientIdInput.value) {
+                e.preventDefault();
+                alert('❌ Please select an ingredient');
+                return false;
+            }
+            
+            console.log("Submitting form with:", {
+                meal_type: selectedMealType.value,
+                ingredient_id: ingredientIdInput.value,
+                quantity: quantityInput.value
+            });
+        });
+    }
+
+    // Enhanced remove confirmation
+    document.querySelectorAll('.btn-remove').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const ingredientName = this.getAttribute('data-ingredient-name');
+            if (!confirm(`Remove ${ingredientName} from this meal?`)) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Auto-select first meal type for better UX
+    if (mealTypeRadios.length > 0 && !document.querySelector('input[name="meal_type"]:checked')) {
+        mealTypeRadios[0].checked = true;
+    }
+
+    // Initialize
+    updateCaloriePreview();
+    updateAddButtonState();
+});
+</script>
+{% endblock %}
+

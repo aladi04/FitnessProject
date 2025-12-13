@@ -5,65 +5,207 @@
 <div class="container py-4">
 
     <div class="card dashboard-card shadow-sm rounded-4 p-4 hover-shadow">
-        <h2 class="text-fitmate">{{ mealplan.day }} — Meal Plan</h2>
-        <hr>
-
-        <p><strong>Breakfast:</strong>
-            {% if mealplan.breakfast.all %}
-                {% for ingredient in mealplan.breakfast.all %}
-                    {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            {% else %}
-                None
-            {% endif %}
-        </p>
-
-        <p><strong>Lunch:</strong>
-            {% if mealplan.lunch.all %}
-                {% for ingredient in mealplan.lunch.all %}
-                    {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            {% else %}
-                None
-            {% endif %}
-        </p>
-
-        <p><strong>Dinner:</strong>
-            {% if mealplan.dinner.all %}
-                {% for ingredient in mealplan.dinner.all %}
-                    {{ ingredient.name }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            {% else %}
-                None
-            {% endif %}
-        </p>
-
-        <p><strong>Snacks:</strong>
-            {% if mealplan.snacks.all %}
-                {% for snack in mealplan.snacks.all %}
-                    {{ snack.name }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            {% else %}
-                None
-            {% endif %}
-        </p>
-
-        <div class="d-flex justify-content-between mt-4">
-            <a href="{% url 'list_mealplans' %}" class="btn ghost">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-
-            <div>
-                <a href="{% url 'update_mealplan' mealplan.pk %}" class="btn btn-fitmate me-2">
-                    <i class="fas fa-edit"></i> Edit
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-fitmate mb-0">{{ mealplan.day }} — Meal Plan</h2>
+            <div class="btn-group">
+                <a href="{% url 'nutrition:manage_meal_plan_meals' mealplan.pk %}" class="btn btn-fitmate">
+                    <i class="fas fa-utensils me-2"></i> Manage Meals
                 </a>
+                <a href="{% url 'nutrition:update_mealplan' mealplan.pk %}" class="btn btn-outline-fitmate">
+                    <i class="fas fa-edit me-2"></i> Edit Plan
+                </a>
+            </div>
+        </div>
 
-                <a href="{% url 'delete_mealplan' mealplan.pk %}" class="btn ghost">
-                    <i class="fas fa-trash-alt"></i> Delete
+        <!-- Nutrition Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h5 class="text-primary">{{ nutrition_totals.calories|floatformat:0 }}</h5>
+                        <small>Calories</small>
+                        <div class="progress mt-1" style="height: 8px;">
+                            <div class="progress-bar bg-primary" style="width: {{ calorie_progress }}%"></div>
+                        </div>
+                        <small class="text-muted">Goal: {{ mealplan.calorie_goal }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h5 class="text-info">{{ nutrition_totals.proteins|floatformat:1 }}g</h5>
+                        <small>Protein</small>
+                        <div class="progress mt-1" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: {{ protein_progress }}%"></div>
+                        </div>
+                        <small class="text-muted">Goal: {{ mealplan.protein_goal }}g</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h5 class="text-warning">{{ nutrition_totals.carbs|floatformat:1 }}g</h5>
+                        <small>Carbs</small>
+                        <small class="text-muted d-block">Goal: {{ mealplan.carb_goal }}g</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h5 class="text-danger">{{ nutrition_totals.fats|floatformat:1 }}g</h5>
+                        <small>Fat</small>
+                        <small class="text-muted d-block">Goal: {{ mealplan.fat_goal }}g</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meals by Type -->
+        {% for meal_type, meals in meals_by_type.items %}
+        <div class="meal-section mb-4">
+            <h4 class="text-fitmate border-bottom pb-2">{{ meal_type|title }}</h4>
+            
+            {% if meals %}
+                {% for meal in meals %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">{{ meal.name|default:"Unnamed Meal" }}</h5>
+                            <span class="badge bg-fitmate">{{ meal.total_calories|floatformat:0 }} cal</span>
+                        </div>
+                        
+                        {% if meal.notes %}
+                        <p class="text-muted mb-3"><small>{{ meal.notes }}</small></p>
+                        {% endif %}
+                        
+                        {% if meal.ingredients.all %}
+                        <div class="mb-3">
+                            <h6 class="text-muted">Ingredients:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless">
+                                    <tbody>
+                                        {% for meal_ingredient in meal.ingredients.all %}
+                                        <tr>
+                                            <td width="60%">
+                                                <i class="fas fa-carrot text-fitmate me-2"></i>
+                                                {{ meal_ingredient.ingredient.name }}
+                                            </td>
+                                            <td width="20%" class="text-end">
+                                                {{ meal_ingredient.quantity }}g
+                                            </td>
+                                            <td width="20%" class="text-end text-muted">
+                                                {{ meal_ingredient.calculated_calories|floatformat:0 }} cal
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Meal Nutrition Summary -->
+                        <div class="nutrition-summary bg-light rounded p-3">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <strong class="text-primary">{{ meal.total_calories|floatformat:0 }}</strong>
+                                    <br>
+                                    <small class="text-muted">Calories</small>
+                                </div>
+                                <div class="col-3">
+                                    <strong class="text-info">{{ meal.total_proteins|floatformat:1 }}g</strong>
+                                    <br>
+                                    <small class="text-muted">Protein</small>
+                                </div>
+                                <div class="col-3">
+                                    <strong class="text-warning">{{ meal.total_carbs|floatformat:1 }}g</strong>
+                                    <br>
+                                    <small class="text-muted">Carbs</small>
+                                </div>
+                                <div class="col-3">
+                                    <strong class="text-danger">{{ meal.total_fats|floatformat:1 }}g</strong>
+                                    <br>
+                                    <small class="text-muted">Fat</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">No ingredients added to this meal.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-utensils text-muted fa-2x mb-3"></i>
+                    <p class="text-muted mb-0">No {{ meal_type }} meals planned.</p>
+                    <a href="{% url 'nutrition:manage_meal_plan_meals' mealplan.pk %}" class="btn btn-fitmate btn-sm mt-2">
+                        Add {{ meal_type|title }} Meal
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+            <a href="{% url 'nutrition:list_mealplans' %}" class="btn ghost">
+                <i class="fas fa-arrow-left me-2"></i> Back to List
+            </a>
+            <div>
+                <a href="{% url 'nutrition:delete_mealplan' mealplan.pk %}" class="btn btn-outline-danger">
+                    <i class="fas fa-trash-alt me-2"></i> Delete Plan
                 </a>
             </div>
         </div>
     </div>
 
 </div>
+
+<style>
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    transition: 0.3s;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.btn-fitmate {
+    background-color: #6C63FF;
+    color: white;
+    border: none;
+}
+.btn-fitmate:hover {
+    background-color: #5848c2;
+    color: white;
+}
+.text-fitmate {
+    color: #6C63FF;
+}
+.dashboard-card {
+    border: none;
+}
+.btn-outline-fitmate {
+    border-color: #6C63FF;
+    color: #6C63FF;
+}
+.btn-outline-fitmate:hover {
+    background-color: #6C63FF;
+    color: white;
+}
+.ghost {
+    background-color: transparent;
+    color: #6C63FF;
+    border: 1px solid #6C63FF;
+}
+.ghost:hover {
+    background-color: #6C63FF;
+    color: white;
+}
+.bg-fitmate {
+    background-color: #6C63FF !important;
+}
+</style>
 {% endblock %}
