@@ -56,40 +56,6 @@
               </div>
             </div>
           </div>
-
-          {% if exercise.video_url %}
-          <!-- Exercise Video Modal -->
-          {% with embed_url=exercise.video_url|youtube_embed %}
-          <div class="modal fade" id="videoModal{{ exercise.id }}" tabindex="-1"
-               aria-labelledby="videoModalLabel{{ exercise.id }}" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered modal-xl">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="videoModalLabel{{ exercise.id }}">
-                    Demo: {{ exercise.name }}
-                  </h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"
-                          aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0">
-                  <!-- Stable aspect ratio container -->
-                  <div style="aspect-ratio: 16/9; width: 100%;">
-                    <iframe
-                      src="{{ embed_url }}?controls=0&rel=0&modestbranding=1"
-                      title="Exercise Demo"
-                      style="width:100%; height:100%; border:0; display:block;"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen
-                      referrerpolicy="strict-origin-when-cross-origin"
-                      id="iframeVideo{{ exercise.id }}">
-                    </iframe>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          {% endwith %}
-          {% endif %}
         </div>
         {% endfor %}
       </div>
@@ -109,6 +75,41 @@
     </div>
   </div>
 </div>
+
+{% for exercise in workout.exercises.all %}
+  {% if exercise.video_url %}
+  <!-- Exercise Video Modal -->
+  {% with embed_url=exercise.video_url|youtube_embed %}
+  <div class="modal fade" id="videoModal{{ exercise.id }}" tabindex="-1"
+       aria-labelledby="videoModalLabel{{ exercise.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="videoModalLabel{{ exercise.id }}">
+            Demo: {{ exercise.name }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0">
+          <div class="ratio ratio-16x9">
+            <iframe
+              data-src="{{ embed_url }}"
+              src=""
+              title="Exercise Demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              referrerpolicy="strict-origin-when-cross-origin"
+              id="iframeVideo{{ exercise.id }}">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+  {% endif %}
+{% endfor %}
 {% endblock %}
 
 {% block extra_js %}
@@ -117,24 +118,29 @@ document.addEventListener('DOMContentLoaded', function () {
     var videoModals = document.querySelectorAll('.modal.fade');
 
     videoModals.forEach(function(modal) {
+        // When modal opens, set the iframe src to start loading/playing
         modal.addEventListener('show.bs.modal', function (event) {
-            // Pause all other iframe videos
+            var iframe = modal.querySelector('iframe');
+            if (iframe && iframe.dataset.src) {
+                iframe.src = iframe.dataset.src;
+            }
+            
+            // Ensure other modals are paused/stopped
             videoModals.forEach(function(otherModal) {
                 if (otherModal !== modal) {
-                    var iframe = otherModal.querySelector('iframe');
-                    if (iframe) {
-                        // Pause the YouTube iframe by resetting the src (stop playback)
-                        iframe.src = iframe.src;
+                    var otherIframe = otherModal.querySelector('iframe');
+                    if (otherIframe) {
+                         otherIframe.src = ""; // Clear src to stop playback
                     }
                 }
             });
         });
 
-        // Also stop video when modal is hidden
+        // When modal closes, clear the src to stop playback completely
         modal.addEventListener('hidden.bs.modal', function () {
             var iframe = modal.querySelector('iframe');
             if (iframe) {
-                iframe.src = iframe.src;
+                iframe.src = "";
             }
         });
     });
