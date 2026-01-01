@@ -35,7 +35,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "harzalifarah@gmail.com"
 EMAIL_HOST_PASSWORD = "owta vraw pbbo ozfg"   # use your 16-digit Google app password
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = 'FitMate Team <' + EMAIL_HOST_USER + '>'
 
 # Application definition
 
